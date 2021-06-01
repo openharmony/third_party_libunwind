@@ -1,0 +1,230 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+common_source = [
+  "src/dwarf/Gexpr.c",
+  "src/dwarf/Gfde.c",
+  "src/dwarf/Gfind_proc_info-lsb.c",
+  "src/dwarf/Gfind_unwind_table.c",
+  "src/dwarf/global.c",
+  "src/dwarf/Gparser.c",
+  "src/dwarf/Gpe.c",
+  "src/dwarf/Lexpr.c",
+  "src/dwarf/Lfde.c",
+  "src/dwarf/Lfind_proc_info-lsb.c",
+  "src/dwarf/Lfind_unwind_table.c",
+  "src/dwarf/Lparser.c",
+  "src/dwarf/Lpe.c",
+  "src/mi/backtrace.c",
+  "src/mi/dyn-cancel.c",
+  "src/mi/dyn-info-list.c",
+  "src/mi/dyn-register.c",
+  "src/mi/flush_cache.c",
+  "src/mi/Gdestroy_addr_space.c",
+  "src/mi/Gdyn-extract.c",
+  "src/mi/Gdyn-remote.c",
+  "src/mi/Gfind_dynamic_proc_info.c",
+  "src/mi/Gget_accessors.c",
+  "src/mi/Gget_fpreg.c",
+  "src/mi/Gget_proc_info_by_ip.c",
+  "src/mi/Gget_proc_name.c",
+  "src/mi/Gget_reg.c",
+  "src/mi/Gput_dynamic_unwind_info.c",
+  "src/mi/Gset_cache_size.c",
+  "src/mi/Gset_caching_policy.c",
+  "src/mi/Gset_fpreg.c",
+  "src/mi/Gset_reg.c",
+  "src/mi/init.c",
+  "src/mi/Ldestroy_addr_space.c",
+  "src/mi/Ldyn-extract.c",
+  "src/mi/Lfind_dynamic_proc_info.c",
+  "src/mi/Lget_fpreg.c",
+  "src/mi/Lget_proc_info_by_ip.c",
+  "src/mi/Lget_proc_name.c",
+  "src/mi/Lget_reg.c",
+  "src/mi/Lput_dynamic_unwind_info.c",
+  "src/mi/Lset_cache_size.c",
+  "src/mi/Lset_caching_policy.c",
+  "src/mi/Lset_fpreg.c",
+  "src/mi/Lset_reg.c",
+  "src/mi/mempool.c",
+  "src/mi/strerror.c",
+  "src/os-linux.c",
+  "src/ptrace/_UPT_access_fpreg.c",
+  "src/ptrace/_UPT_access_mem.c",
+  "src/ptrace/_UPT_access_reg.c",
+  "src/ptrace/_UPT_accessors.c",
+  "src/ptrace/_UPT_create.c",
+  "src/ptrace/_UPT_destroy.c",
+  "src/ptrace/_UPT_find_proc_info.c",
+  "src/ptrace/_UPT_get_dyn_info_list_addr.c",
+  "src/ptrace/_UPT_get_proc_name.c",
+  "src/ptrace/_UPT_put_unwind_info.c",
+  "src/ptrace/_UPT_reg_offset.c",
+  "src/ptrace/_UPT_resume.c",
+]
+
+config("unwind_config_public") {
+  include_dirs = [
+    "src",
+    "include",
+  ]
+
+  cflags = [
+    "-D_GNU_SOURCE",
+    "-DHAVE_CONFIG_H",
+    "-DNDEBUG",
+    "-fcommon",
+    "-Werror",
+    "-Wno-absolute-value",
+    "-Wno-header-guard",
+    "-Wno-unused-parameter",
+  ]
+
+  if (target_cpu == "arm") {
+    include_dirs += [ "include/tdep-arm" ]
+    cflags += [
+      "-Wno-inline-asm",
+      "-Wno-shift-count-overflow",
+      "-Wno-tautological-constant-out-of-range-compare",
+      "-Wno-unused-function",
+    ]
+  } else if (target_cpu == "arm64") {
+    include_dirs += [ "include/tdep-aarch64" ]
+  } else if (target_cpu == "x86_64") {
+    include_dirs += [ "include/tdep-x86_64" ]
+  }
+}
+
+ohos_source_set("unwind_source") {
+  configs = [ ":unwind_config_public" ]
+  sources = common_source
+
+  if (target_cpu == "arm") {
+    # as libc++ is static linked with libunwind.a
+    # we remove the Gstep.c for duplicated symbol violation
+    sources += [
+      "src/arm/Gapply_reg_state.c",
+      "src/arm/Gcreate_addr_space.c",
+      "src/arm/Gex_tables.c",
+      "src/arm/Gget_proc_info.c",
+      "src/arm/Gget_save_loc.c",
+      "src/arm/Gglobal.c",
+      "src/arm/Ginit.c",
+      "src/arm/Ginit_local.c",
+      "src/arm/Ginit_remote.c",
+      "src/arm/Gos-linux.c",
+      "src/arm/Greg_states_iterate.c",
+      "src/arm/Gregs.c",
+      "src/arm/Gresume.c",
+      "src/arm/Gstash_frame.c",
+      "src/arm/Gstep.c",
+      "src/arm/Gtrace.c",
+      "src/arm/Lcreate_addr_space.c",
+      "src/arm/Lex_tables.c",
+      "src/arm/Lget_proc_info.c",
+      "src/arm/Lget_save_loc.c",
+      "src/arm/Lglobal.c",
+      "src/arm/Linit.c",
+      "src/arm/Linit_local.c",
+      "src/arm/Linit_remote.c",
+      "src/arm/Los-linux.c",
+      "src/arm/Lregs.c",
+      "src/arm/Lresume.c",
+      "src/arm/Lstash_frame.c",
+      "src/arm/Lstep.c",
+      "src/arm/Ltrace.c",
+      "src/arm/gen-offsets.c",
+      "src/arm/getcontext.S",
+      "src/arm/is_fpreg.c",
+      "src/arm/regname.c",
+      "src/arm/siglongjmp.S",
+      "src/elf32.c",
+    ]
+  } else if (target_cpu == "arm64") {
+    sources += [
+      "src/aarch64/Gcreate_addr_space.c",
+      "src/aarch64/Gget_proc_info.c",
+      "src/aarch64/Gget_save_loc.c",
+      "src/aarch64/Gglobal.c",
+      "src/aarch64/Ginit.c",
+      "src/aarch64/Ginit_local.c",
+      "src/aarch64/Ginit_remote.c",
+      "src/aarch64/Gis_signal_frame.c",
+      "src/aarch64/Gregs.c",
+      "src/aarch64/Gresume.c",
+      "src/aarch64/Gstash_frame.c",
+      "src/aarch64/Gstep.c",
+      "src/aarch64/Gtrace.c",
+      "src/aarch64/Lcreate_addr_space.c",
+      "src/aarch64/Lget_proc_info.c",
+      "src/aarch64/Lget_save_loc.c",
+      "src/aarch64/Lglobal.c",
+      "src/aarch64/Linit.c",
+      "src/aarch64/Linit_local.c",
+      "src/aarch64/Linit_remote.c",
+      "src/aarch64/Lis_signal_frame.c",
+      "src/aarch64/Lregs.c",
+      "src/aarch64/Lresume.c",
+      "src/aarch64/Lstash_frame.c",
+      "src/aarch64/Lstep.c",
+      "src/aarch64/Ltrace.c",
+      "src/aarch64/getcontext.S",
+      "src/aarch64/is_fpreg.c",
+      "src/aarch64/regname.c",
+      "src/elf64.c",
+    ]
+  } else if (target_cpu == "x86_64") {
+    sources += [
+      "src/elf64.c",
+      "src/x86_64/Gcreate_addr_space.c",
+      "src/x86_64/Gget_proc_info.c",
+      "src/x86_64/Gget_save_loc.c",
+      "src/x86_64/Gglobal.c",
+      "src/x86_64/Ginit.c",
+      "src/x86_64/Ginit_local.c",
+      "src/x86_64/Ginit_remote.c",
+      "src/x86_64/Gos-linux.c",
+      "src/x86_64/Gregs.c",
+      "src/x86_64/Gresume.c",
+      "src/x86_64/Gstash_frame.c",
+      "src/x86_64/Gstep.c",
+      "src/x86_64/Gtrace.c",
+      "src/x86_64/Lcreate_addr_space.c",
+      "src/x86_64/Lget_proc_info.c",
+      "src/x86_64/Lget_save_loc.c",
+      "src/x86_64/Lglobal.c",
+      "src/x86_64/Linit.c",
+      "src/x86_64/Linit_local.c",
+      "src/x86_64/Linit_remote.c",
+      "src/x86_64/Los-linux.c",
+      "src/x86_64/Lregs.c",
+      "src/x86_64/Lresume.c",
+      "src/x86_64/Lstash_frame.c",
+      "src/x86_64/Lstep.c",
+      "src/x86_64/Ltrace.c",
+      "src/x86_64/getcontext.S",
+      "src/x86_64/is_fpreg.c",
+      "src/x86_64/regname.c",
+      "src/x86_64/setcontext.S",
+    ]
+  }
+}
+
+ohos_shared_library("libunwind") {
+  deps = [ ":unwind_source" ]
+  public_configs = [ ":unwind_config_public" ]
+  part_name = "faultloggerd"
+  subsystem_name = "hiviewdfx"
+}
