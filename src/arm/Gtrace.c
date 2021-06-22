@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "offsets.h"
 #include <signal.h>
 #include <limits.h>
+#include <stdio.h>
 
 #pragma weak pthread_once
 #pragma weak pthread_key_create
