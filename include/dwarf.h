@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define dwarf_h
 
 #include <libunwind.h>
+#include <stdatomic.h>
 
 struct dwarf_cursor;    /* forward-declaration */
 struct elf_dyn_info;
@@ -44,6 +45,9 @@ struct elf_dyn_info;
     #include <sys/link.h>
   #else
     #error Could not find <link.h>
+  #endif
+  #if defined(__ANDROID__) && defined(__arm__) && __ANDROID_API__ < 21
+    int dl_iterate_phdr(int (*)(struct dl_phdr_info *, size_t, void *), void *);
   #endif
 #endif
 
@@ -347,7 +351,7 @@ struct dwarf_rs_cache
     /* hash table that maps instruction pointer to rs index: */
     unsigned short *hash;
 
-    uint32_t generation;        /* generation number */
+    _Atomic uint32_t generation;        /* generation number */
 
     /* rs cache: */
     dwarf_reg_state_t *buckets;
@@ -366,6 +370,8 @@ struct unw_debug_frame_list
     /* The start (inclusive) and end (exclusive) of the described region.  */
     unw_word_t start;
     unw_word_t end;
+    /* ELF load offset */
+    unw_word_t load_offset;
     /* The debug frame itself.  */
     char *debug_frame;
     size_t debug_frame_size;
@@ -419,7 +425,7 @@ extern int dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t a
                                     unw_word_t ip);
 extern void dwarf_put_unwind_info (unw_addr_space_t as,
                                    unw_proc_info_t *pi, void *arg);
-extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,
+extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
                             unw_word_t len, unw_word_t *valp,
                             int *is_register);
 extern int
