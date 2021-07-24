@@ -1,7 +1,7 @@
-#include <signal.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <ucontext.h>
+#include <signal.h>
 
 #define UC(N,X) \
   printf ("#define LINUX_UC_" N "_OFF\t0x%X\n", offsetof (ucontext_t, X))

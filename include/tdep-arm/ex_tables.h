@@ -47,7 +47,6 @@ struct arm_exbuf_data
 #define arm_exidx_extract       UNW_OBJ(arm_exidx_extract)
 #define arm_exidx_decode        UNW_OBJ(arm_exidx_decode)
 #define arm_exidx_apply_cmd     UNW_OBJ(arm_exidx_apply_cmd)
-#define arm_search_unwind_table UNW_OBJ(arm_search_unwind_table)
 
 int arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf);
 int arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c);

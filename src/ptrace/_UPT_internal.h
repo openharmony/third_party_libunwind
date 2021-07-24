@@ -35,7 +35,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 #ifdef HAVE_SYS_PTRACE_H
 #include <sys/ptrace.h>
-#include <asm/ptrace.h>
 #endif
 #ifdef HAVE_SYS_PROCFS_H
 #include <sys/procfs.h>

@@ -90,6 +90,7 @@ config("unwind_config_public") {
     "-Wno-absolute-value",
     "-Wno-header-guard",
     "-Wno-unused-parameter",
+    "-Wno-unused-variable",
   ]
 
   if (target_cpu == "arm") {
