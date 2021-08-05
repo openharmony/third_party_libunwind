@@ -161,6 +161,7 @@ unw_step (unw_cursor_t *cursor)
           }
           if (frame)
             {
+#ifndef CC_IS_CLANG
               if (dwarf_get(&c->dwarf, DWARF_LOC(frame, 0), &instr) < 0)
                 {
                   return 0;
@@ -182,6 +183,17 @@ unw_step (unw_cursor_t *cursor)
                   ip_loc = DWARF_LOC(frame, 0);
                   fp_loc = DWARF_LOC(frame - 4, 0);
                 }
+#else
+              ip_loc = DWARF_LOC(frame + 4, 0);
+              fp_loc = DWARF_LOC(frame, 0);
+              if (dwarf_get(&c->dwarf, ip_loc, &c->dwarf.ip) < 0)
+                {
+                  return 0;
+                }
+              c->dwarf.loc[UNW_ARM_R12] = ip_loc;
+              c->dwarf.loc[UNW_ARM_R11] = fp_loc;
+              return 1;
+#endif
               if (dwarf_get(&c->dwarf, ip_loc, &c->dwarf.ip) < 0)
                 {
                   return 0;

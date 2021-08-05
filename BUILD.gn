@@ -85,6 +85,7 @@ config("unwind_config_public") {
     "-D_GNU_SOURCE",
     "-DHAVE_CONFIG_H",
     "-DNDEBUG",
+    "-DCC_IS_CLANG",
     "-fcommon",
     "-Werror",
     "-Wno-absolute-value",
