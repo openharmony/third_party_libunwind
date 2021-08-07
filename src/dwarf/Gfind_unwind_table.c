@@ -34,6 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 
 #define to_unw_word(p) ((unw_word_t) (uintptr_t) (p))
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 4096
+#endif
 
 int
 dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
@@ -73,7 +76,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
           if (phdr[i].p_vaddr + phdr[i].p_memsz > end_ip)
             end_ip = phdr[i].p_vaddr + phdr[i].p_memsz;
 
-          if (phdr[i].p_offset == mapoff)
+          if ((phdr[i].p_offset & (-PAGE_SIZE)) == mapoff)
             ptxt = phdr + i;
           if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
             max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
@@ -104,7 +107,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
   if (!ptxt)
     return 0;
 
-  load_base = segbase - ptxt->p_vaddr;
+  load_base = segbase - (ptxt->p_vaddr & (-PAGE_SIZE));
   start_ip += load_base;
   end_ip += load_base;
 
