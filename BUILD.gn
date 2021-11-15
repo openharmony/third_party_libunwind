@@ -77,7 +77,7 @@ common_source = [
 
 # as libc++ is static linked with libunwind.a
 # we remove the Gstep.c for duplicated symbol violation
-arm_source =[
+arm_source = [
   "src/arm/Gapply_reg_state.c",
   "src/arm/Gcreate_addr_space.c",
   "src/arm/Gex_tables.c",
@@ -207,6 +207,7 @@ libunwind_la_SOURCES_local_nounwind = [
   "src/mi/dyn-register.c",
   "src/mi/Ldyn-extract.c",
   "src/mi/Lfind_dynamic_proc_info.c",
+
   # "src/mi/Lget_accessors.c", # miss
   "src/mi/Lget_proc_info_by_ip.c",
   "src/mi/Lget_proc_name.c",
@@ -234,14 +235,11 @@ remove_sources += libunwind_la_SOURCES_local_nounwind
 remove_sources += libunwind_dwarf_local_la_SOURCES
 remove_sources += ptrace_sources
 
-if(is_mingw) {
-  libunwind_la_SOURCES_os_linux = [
-    "src/os-linux.c"
-  ]
+if (is_mingw) {
+  libunwind_la_SOURCES_os_linux = [ "src/os-linux.c" ]
   common_source += [ "src/mingw/pal-single-threaded.c" ]
   common_source -= libunwind_la_SOURCES_os_linux
 }
-
 
 config("unwind_config_public") {
   include_dirs = [
@@ -278,7 +276,8 @@ config("unwind_config_public") {
   }
 }
 config("unwind_config_remote") {
-  cflags = [ "-Wno-format" ] # some debug feature will warning in host x64 build
+  cflags =
+      [ "-Wno-format" ]  # some debug feature will warning in host x64 build
 }
 config("unwind_config_remote_public") {
   cflags = []
@@ -289,25 +288,26 @@ config("unwind_config_remote_public") {
   # what means host use remote mode to unwind
   # with dwarf from stack or coredump or something not real target
   # There is an exception, we can support local unwind for linux.
-  cflags += [ "-DUNW_REMOTE_ONLY"]
-  cflags += [ "-DDEBUG" ] # allow debug
+  cflags += [ "-DUNW_REMOTE_ONLY" ]
+  cflags += [ "-DDEBUG" ]  # allow debug
   cflags += [ "-DBUILD_REMOTE" ]
 
-  cflags += [ "-Wno-sometimes-uninitialized" ] # some value not initialized in host x64 build
+  cflags += [ "-Wno-sometimes-uninitialized" ]  # some value not initialized in
+                                                # host x64 build
   cflags += [ "-Wno-int-to-void-pointer-cast" ]
 
-  if(is_mingw) {
+  if (is_mingw) {
     include_dirs += [ "include/mingw" ]
     cflags += [ "-DMINGW" ]
-  } else if(is_linux) {
-    cflags += [ "-g"] # we need debug info when it crash.
+  } else if (is_linux) {
+    cflags += [ "-g" ]  # we need debug info when it crash.
   }
 
   defines += [ "build_remote=1" ]
-  defines += [ "target_cpu=${target_cpu}"]
-  defines += [ "host_toolchain=${host_toolchain}"]
-  defines += [ "current_toolchain=${current_toolchain}"]
-  defines += [ "default_toolchain=${default_toolchain}"]
+  defines += [ "target_cpu=${target_cpu}" ]
+  defines += [ "host_toolchain=${host_toolchain}" ]
+  defines += [ "current_toolchain=${current_toolchain}" ]
+  defines += [ "default_toolchain=${default_toolchain}" ]
 }
 
 config("unwind_config_arm") {
@@ -325,15 +325,21 @@ config("unwind_config_x64") {
 
 ohos_source_set("unwind_source_arm") {
   configs = [ ":unwind_config_remote" ]
-  public_configs = [ ":unwind_config_public", ":unwind_config_remote_public", ":unwind_config_arm" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_arm",
+  ]
   sources = common_source
+
   # there is a main function in this file
-  # for a lib we dont need this 
+  # for a lib we dont need this
   arm_source -= [ "src/arm/gen-offsets.c" ]
+
   # no jump lib
   arm_source -= [
     "src/arm/getcontext.S",
-    "src/arm/siglongjmp.S"
+    "src/arm/siglongjmp.S",
   ]
   sources += arm_source
   sources -= remove_sources
@@ -341,7 +347,11 @@ ohos_source_set("unwind_source_arm") {
 
 ohos_source_set("unwind_source_arm64") {
   configs = [ ":unwind_config_remote" ]
-  public_configs = [ ":unwind_config_public", ":unwind_config_remote_public", ":unwind_config_arm64" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_arm64",
+  ]
   sources = common_source
   sources += arm64_source
   sources -= remove_sources
@@ -349,8 +359,13 @@ ohos_source_set("unwind_source_arm64") {
 
 ohos_source_set("unwind_source_x64") {
   configs = [ ":unwind_config_remote" ]
-  public_configs = [ ":unwind_config_public", ":unwind_config_remote_public", ":unwind_config_x64" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_x64",
+  ]
   sources = common_source
+
   # no jump lib
   x64_source -= [
     "src/x86_64/getcontext.S",
@@ -370,9 +385,8 @@ ohos_source_set("unwind_source") {
     sources += arm_source
     public_configs = [ ":unwind_config_arm" ]
   } else if (target_cpu == "arm64") {
-    sources +=  arm64_source
+    sources += arm64_source
     public_configs = [ ":unwind_config_arm64" ]
-
   } else if (target_cpu == "x64") {
     sources += x64_source
     public_configs = [ ":unwind_config_x64" ]
