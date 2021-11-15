@@ -31,6 +31,12 @@
 
 #else /* UNW_REMOTE_ONLY */
 
+#if defined UNW_TARGET_ARM
+# include "libunwind-arm.h"
+#elif defined UNW_TARGET_ARM64
+# include "libunwind-aarch64.h"
+#else
 # include "libunwind-x86_64.h"
+#endif
 
 #endif /* UNW_REMOTE_ONLY */
