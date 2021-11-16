@@ -75,6 +75,172 @@ common_source = [
   "src/ptrace/_UPT_resume.c",
 ]
 
+# as libc++ is static linked with libunwind.a
+# we remove the Gstep.c for duplicated symbol violation
+arm_source = [
+  "src/arm/Gapply_reg_state.c",
+  "src/arm/Gcreate_addr_space.c",
+  "src/arm/Gex_tables.c",
+  "src/arm/Gget_proc_info.c",
+  "src/arm/Gget_save_loc.c",
+  "src/arm/Gglobal.c",
+  "src/arm/Ginit.c",
+  "src/arm/Ginit_local.c",
+  "src/arm/Ginit_remote.c",
+  "src/arm/Gos-linux.c",
+  "src/arm/Greg_states_iterate.c",
+  "src/arm/Gregs.c",
+  "src/arm/Gresume.c",
+  "src/arm/Gstash_frame.c",
+  "src/arm/Gstep.c",
+  "src/arm/Gtrace.c",
+  "src/arm/Lcreate_addr_space.c",
+  "src/arm/Lex_tables.c",
+  "src/arm/Lget_proc_info.c",
+  "src/arm/Lget_save_loc.c",
+  "src/arm/Lglobal.c",
+  "src/arm/Linit.c",
+  "src/arm/Linit_local.c",
+  "src/arm/Linit_remote.c",
+  "src/arm/Los-linux.c",
+  "src/arm/Lregs.c",
+  "src/arm/Lresume.c",
+  "src/arm/Lstash_frame.c",
+  "src/arm/Lstep.c",
+  "src/arm/Ltrace.c",
+  "src/arm/gen-offsets.c",
+  "src/arm/getcontext.S",
+  "src/arm/is_fpreg.c",
+  "src/arm/regname.c",
+  "src/arm/siglongjmp.S",
+  "src/elf32.c",
+]
+
+arm64_source = [
+  "src/aarch64/Gcreate_addr_space.c",
+  "src/aarch64/Gget_proc_info.c",
+  "src/aarch64/Gget_save_loc.c",
+  "src/aarch64/Gglobal.c",
+  "src/aarch64/Ginit.c",
+  "src/aarch64/Ginit_local.c",
+  "src/aarch64/Ginit_remote.c",
+  "src/aarch64/Gis_signal_frame.c",
+  "src/aarch64/Gregs.c",
+  "src/aarch64/Gresume.c",
+  "src/aarch64/Gstash_frame.c",
+  "src/aarch64/Gstep.c",
+  "src/aarch64/Gtrace.c",
+  "src/aarch64/Lcreate_addr_space.c",
+  "src/aarch64/Lget_proc_info.c",
+  "src/aarch64/Lget_save_loc.c",
+  "src/aarch64/Lglobal.c",
+  "src/aarch64/Linit.c",
+  "src/aarch64/Linit_local.c",
+  "src/aarch64/Linit_remote.c",
+  "src/aarch64/Lis_signal_frame.c",
+  "src/aarch64/Lregs.c",
+  "src/aarch64/Lresume.c",
+  "src/aarch64/Lstash_frame.c",
+  "src/aarch64/Lstep.c",
+  "src/aarch64/Ltrace.c",
+  "src/aarch64/getcontext.S",
+  "src/aarch64/is_fpreg.c",
+  "src/aarch64/regname.c",
+  "src/elf64.c",
+]
+
+x64_source = [
+  "src/elf64.c",
+  "src/x86_64/Gcreate_addr_space.c",
+  "src/x86_64/Gget_proc_info.c",
+  "src/x86_64/Gget_save_loc.c",
+  "src/x86_64/Gglobal.c",
+  "src/x86_64/Ginit.c",
+  "src/x86_64/Ginit_local.c",
+  "src/x86_64/Ginit_remote.c",
+  "src/x86_64/Gos-linux.c",
+  "src/x86_64/Gregs.c",
+  "src/x86_64/Gresume.c",
+  "src/x86_64/Gstash_frame.c",
+  "src/x86_64/Gstep.c",
+  "src/x86_64/Gtrace.c",
+  "src/x86_64/Lcreate_addr_space.c",
+  "src/x86_64/Lget_proc_info.c",
+  "src/x86_64/Lget_save_loc.c",
+  "src/x86_64/Lglobal.c",
+  "src/x86_64/Linit.c",
+  "src/x86_64/Linit_local.c",
+  "src/x86_64/Linit_remote.c",
+  "src/x86_64/Los-linux.c",
+  "src/x86_64/Lregs.c",
+  "src/x86_64/Lresume.c",
+  "src/x86_64/Lstash_frame.c",
+  "src/x86_64/Lstep.c",
+  "src/x86_64/Ltrace.c",
+  "src/x86_64/getcontext.S",
+  "src/x86_64/is_fpreg.c",
+  "src/x86_64/regname.c",
+  "src/x86_64/setcontext.S",
+]
+
+remove_sources = []
+
+ptrace_sources = [
+  "src/ptrace/_UPT_access_fpreg.c",
+  "src/ptrace/_UPT_access_mem.c",
+  "src/ptrace/_UPT_access_reg.c",
+  "src/ptrace/_UPT_accessors.c",
+  "src/ptrace/_UPT_create.c",
+  "src/ptrace/_UPT_destroy.c",
+  "src/ptrace/_UPT_find_proc_info.c",
+  "src/ptrace/_UPT_get_dyn_info_list_addr.c",
+  "src/ptrace/_UPT_get_proc_name.c",
+  "src/ptrace/_UPT_put_unwind_info.c",
+  "src/ptrace/_UPT_reg_offset.c",
+  "src/ptrace/_UPT_resume.c",
+]
+
+libunwind_la_SOURCES_local_nounwind = [
+  "src/mi/backtrace.c",
+  "src/mi/dyn-cancel.c",
+  "src/mi/dyn-info-list.c",
+  "src/mi/dyn-register.c",
+  "src/mi/Ldyn-extract.c",
+  "src/mi/Lfind_dynamic_proc_info.c",
+
+  # "src/mi/Lget_accessors.c", # miss
+  "src/mi/Lget_proc_info_by_ip.c",
+  "src/mi/Lget_proc_name.c",
+  "src/mi/Lput_dynamic_unwind_info.c",
+  "src/mi/Ldestroy_addr_space.c",
+  "src/mi/Lget_reg.c",
+  "src/mi/Lset_reg.c",
+  "src/mi/Lget_fpreg.c",
+  "src/mi/Lset_fpreg.c",
+  "src/mi/Lset_caching_policy.c",
+  "src/mi/Lset_cache_size.c",
+]
+
+libunwind_dwarf_local_la_SOURCES = [
+  "src/dwarf/Lexpr.c",
+  "src/dwarf/Lfde.c",
+  "src/dwarf/Lparser.c",
+  "src/dwarf/Lpe.c",
+  "src/dwarf/Lfind_proc_info-lsb.c",
+  "src/dwarf/Lfind_unwind_table.c",
+]
+
+# remove local file
+remove_sources += libunwind_la_SOURCES_local_nounwind
+remove_sources += libunwind_dwarf_local_la_SOURCES
+remove_sources += ptrace_sources
+
+if (is_mingw) {
+  libunwind_la_SOURCES_os_linux = [ "src/os-linux.c" ]
+  common_source += [ "src/mingw/pal-single-threaded.c" ]
+  common_source -= libunwind_la_SOURCES_os_linux
+}
+
 config("unwind_config_public") {
   include_dirs = [
     "src",
@@ -105,9 +271,108 @@ config("unwind_config_public") {
   } else if (target_cpu == "arm64") {
     include_dirs += [ "include/tdep-aarch64" ]
     cflags += [ "-Wno-incompatible-pointer-types" ]
-  } else if (target_cpu == "x86_64") {
+  } else if (target_cpu == "x64") {
     include_dirs += [ "include/tdep-x86_64" ]
   }
+}
+config("unwind_config_remote") {
+  cflags =
+      [ "-Wno-format" ]  # some debug feature will warning in host x64 build
+}
+config("unwind_config_remote_public") {
+  cflags = []
+  include_dirs = []
+  defines = []
+
+  # this is a host tools build
+  # what means host use remote mode to unwind
+  # with dwarf from stack or coredump or something not real target
+  # There is an exception, we can support local unwind for linux.
+  cflags += [ "-DUNW_REMOTE_ONLY" ]
+  cflags += [ "-DDEBUG" ]  # allow debug
+  cflags += [ "-DBUILD_REMOTE" ]
+
+  cflags += [ "-Wno-sometimes-uninitialized" ]  # some value not initialized in
+                                                # host x64 build
+  cflags += [ "-Wno-int-to-void-pointer-cast" ]
+
+  if (is_mingw) {
+    include_dirs += [ "include/mingw" ]
+    cflags += [ "-DMINGW" ]
+  } else if (is_linux) {
+    cflags += [ "-g" ]  # we need debug info when it crash.
+  }
+
+  defines += [ "build_remote=1" ]
+  defines += [ "target_cpu=${target_cpu}" ]
+  defines += [ "host_toolchain=${host_toolchain}" ]
+  defines += [ "current_toolchain=${current_toolchain}" ]
+  defines += [ "default_toolchain=${default_toolchain}" ]
+}
+
+config("unwind_config_arm") {
+  defines = [ "UNW_TARGET_ARM" ]
+}
+
+config("unwind_config_arm64") {
+  defines = [ "UNW_TARGET_ARM64" ]
+}
+
+config("unwind_config_x64") {
+  defines = [ "UNW_TARGET_X86_64" ]
+  defines += [ "UNW_TARGET_X86_64_LINUX" ]
+}
+
+ohos_source_set("unwind_source_arm") {
+  configs = [ ":unwind_config_remote" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_arm",
+  ]
+  sources = common_source
+
+  # there is a main function in this file
+  # for a lib we dont need this
+  arm_source -= [ "src/arm/gen-offsets.c" ]
+
+  # no jump lib
+  arm_source -= [
+    "src/arm/getcontext.S",
+    "src/arm/siglongjmp.S",
+  ]
+  sources += arm_source
+  sources -= remove_sources
+}
+
+ohos_source_set("unwind_source_arm64") {
+  configs = [ ":unwind_config_remote" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_arm64",
+  ]
+  sources = common_source
+  sources += arm64_source
+  sources -= remove_sources
+}
+
+ohos_source_set("unwind_source_x64") {
+  configs = [ ":unwind_config_remote" ]
+  public_configs = [
+    ":unwind_config_public",
+    ":unwind_config_remote_public",
+    ":unwind_config_x64",
+  ]
+  sources = common_source
+
+  # no jump lib
+  x64_source -= [
+    "src/x86_64/getcontext.S",
+    "src/x86_64/setcontext.S",
+  ]
+  sources += x64_source
+  sources -= remove_sources
 }
 
 ohos_source_set("unwind_source") {
@@ -117,111 +382,14 @@ ohos_source_set("unwind_source") {
   if (target_cpu == "arm") {
     # as libc++ is static linked with libunwind.a
     # we remove the Gstep.c for duplicated symbol violation
-    sources += [
-      "src/arm/Gapply_reg_state.c",
-      "src/arm/Gcreate_addr_space.c",
-      "src/arm/Gex_tables.c",
-      "src/arm/Gget_proc_info.c",
-      "src/arm/Gget_save_loc.c",
-      "src/arm/Gglobal.c",
-      "src/arm/Ginit.c",
-      "src/arm/Ginit_local.c",
-      "src/arm/Ginit_remote.c",
-      "src/arm/Gos-linux.c",
-      "src/arm/Greg_states_iterate.c",
-      "src/arm/Gregs.c",
-      "src/arm/Gresume.c",
-      "src/arm/Gstash_frame.c",
-      "src/arm/Gstep.c",
-      "src/arm/Gtrace.c",
-      "src/arm/Lcreate_addr_space.c",
-      "src/arm/Lex_tables.c",
-      "src/arm/Lget_proc_info.c",
-      "src/arm/Lget_save_loc.c",
-      "src/arm/Lglobal.c",
-      "src/arm/Linit.c",
-      "src/arm/Linit_local.c",
-      "src/arm/Linit_remote.c",
-      "src/arm/Los-linux.c",
-      "src/arm/Lregs.c",
-      "src/arm/Lresume.c",
-      "src/arm/Lstash_frame.c",
-      "src/arm/Lstep.c",
-      "src/arm/Ltrace.c",
-      "src/arm/gen-offsets.c",
-      "src/arm/getcontext.S",
-      "src/arm/is_fpreg.c",
-      "src/arm/regname.c",
-      "src/arm/siglongjmp.S",
-      "src/elf32.c",
-    ]
+    sources += arm_source
+    public_configs = [ ":unwind_config_arm" ]
   } else if (target_cpu == "arm64") {
-    sources += [
-      "src/aarch64/Gcreate_addr_space.c",
-      "src/aarch64/Gget_proc_info.c",
-      "src/aarch64/Gget_save_loc.c",
-      "src/aarch64/Gglobal.c",
-      "src/aarch64/Ginit.c",
-      "src/aarch64/Ginit_local.c",
-      "src/aarch64/Ginit_remote.c",
-      "src/aarch64/Gis_signal_frame.c",
-      "src/aarch64/Gregs.c",
-      "src/aarch64/Gresume.c",
-      "src/aarch64/Gstash_frame.c",
-      "src/aarch64/Gstep.c",
-      "src/aarch64/Gtrace.c",
-      "src/aarch64/Lcreate_addr_space.c",
-      "src/aarch64/Lget_proc_info.c",
-      "src/aarch64/Lget_save_loc.c",
-      "src/aarch64/Lglobal.c",
-      "src/aarch64/Linit.c",
-      "src/aarch64/Linit_local.c",
-      "src/aarch64/Linit_remote.c",
-      "src/aarch64/Lis_signal_frame.c",
-      "src/aarch64/Lregs.c",
-      "src/aarch64/Lresume.c",
-      "src/aarch64/Lstash_frame.c",
-      "src/aarch64/Lstep.c",
-      "src/aarch64/Ltrace.c",
-      "src/aarch64/getcontext.S",
-      "src/aarch64/is_fpreg.c",
-      "src/aarch64/regname.c",
-      "src/elf64.c",
-    ]
-  } else if (target_cpu == "x86_64") {
-    sources += [
-      "src/elf64.c",
-      "src/x86_64/Gcreate_addr_space.c",
-      "src/x86_64/Gget_proc_info.c",
-      "src/x86_64/Gget_save_loc.c",
-      "src/x86_64/Gglobal.c",
-      "src/x86_64/Ginit.c",
-      "src/x86_64/Ginit_local.c",
-      "src/x86_64/Ginit_remote.c",
-      "src/x86_64/Gos-linux.c",
-      "src/x86_64/Gregs.c",
-      "src/x86_64/Gresume.c",
-      "src/x86_64/Gstash_frame.c",
-      "src/x86_64/Gstep.c",
-      "src/x86_64/Gtrace.c",
-      "src/x86_64/Lcreate_addr_space.c",
-      "src/x86_64/Lget_proc_info.c",
-      "src/x86_64/Lget_save_loc.c",
-      "src/x86_64/Lglobal.c",
-      "src/x86_64/Linit.c",
-      "src/x86_64/Linit_local.c",
-      "src/x86_64/Linit_remote.c",
-      "src/x86_64/Los-linux.c",
-      "src/x86_64/Lregs.c",
-      "src/x86_64/Lresume.c",
-      "src/x86_64/Lstash_frame.c",
-      "src/x86_64/Lstep.c",
-      "src/x86_64/Ltrace.c",
-      "src/x86_64/getcontext.S",
-      "src/x86_64/is_fpreg.c",
-      "src/x86_64/regname.c",
-      "src/x86_64/setcontext.S",
-    ]
+    sources += arm64_source
+    public_configs = [ ":unwind_config_arm64" ]
+  } else if (target_cpu == "x64") {
+    sources += x64_source
+    public_configs = [ ":unwind_config_x64" ]
   }
 }
 
