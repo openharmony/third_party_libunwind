@@ -289,7 +289,7 @@ config("unwind_config_remote_public") {
   # with dwarf from stack or coredump or something not real target
   # There is an exception, we can support local unwind for linux.
   cflags += [ "-DUNW_REMOTE_ONLY" ]
-  cflags += [ "-DDEBUG" ]  # allow debug
+  # cflags += [ "-DDEBUG" ]  # allow debug
   cflags += [ "-DBUILD_REMOTE" ]
 
   cflags += [ "-Wno-sometimes-uninitialized" ]  # some value not initialized in
