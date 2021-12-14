@@ -47,7 +47,10 @@ tdep_init (void)
 
     dwarf_init ();
 
+#ifndef UNW_REMOTE_ONLY
+//  tdep_init_mem_validate will not define in Ginit.c for UNW_REMOTE_ONLY
     tdep_init_mem_validate ();
+#endif
 
 #ifndef UNW_REMOTE_ONLY
     aarch64_local_addr_space_init ();
