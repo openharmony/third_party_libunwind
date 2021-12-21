@@ -48,7 +48,7 @@ tdep_init (void)
     dwarf_init ();
 
 #ifndef UNW_REMOTE_ONLY
-//  tdep_init_mem_validate will not define in Ginit.c for UNW_REMOTE_ONLY
+//  tdep_init_mem_validate is not defined in Ginit.c for UNW_REMOTE_ONLY
     tdep_init_mem_validate ();
 #endif
 
