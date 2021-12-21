@@ -290,7 +290,6 @@ config("unwind_config_remote_public") {
   # There is an exception, we can support local unwind for linux.
   cflags += [ "-DUNW_REMOTE_ONLY" ]
 
-  # cflags += [ "-DDEBUG" ]  # allow debug
   cflags += [ "-DBUILD_REMOTE" ]
 
   cflags += [ "-Wno-sometimes-uninitialized" ]  # some value not initialized in
