@@ -61,6 +61,7 @@ common_source = [
   "src/mi/mempool.c",
   "src/mi/strerror.c",
   "src/os-linux.c",
+  "src/ohos-config.c",
   "src/ptrace/_UPT_access_fpreg.c",
   "src/ptrace/_UPT_access_mem.c",
   "src/ptrace/_UPT_access_reg.c",

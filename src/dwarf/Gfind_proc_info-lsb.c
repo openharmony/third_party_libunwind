@@ -546,7 +546,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
 
   eh_frame = shdr->sh_addr + info->dlpi_addr;
   Debug (4, "found .eh_frame at address %lx\n",
-         eh_frame);
+         (unsigned long)eh_frame);
 
 out:
   munmap (ei.image, ei.size);
@@ -723,7 +723,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
             abort ();
 
           Debug (1, "eh_frame_start = %lx eh_frame_end = %lx\n",
-                 eh_frame_start, eh_frame_end);
+                 (unsigned long)eh_frame_start, (unsigned long)eh_frame_end);
 
           /* XXX we know how to build a local binary search table for
              .debug_frame, so we could do that here too.  */
