@@ -17,8 +17,8 @@
         "third-party",
         "libunwind"
     ],
-    "envs": [],
-    "dirs": [],
+    "envs": {},
+    "dirs": {},
     "segment": {
         "destPath": "third_party/libunwind"
     },
