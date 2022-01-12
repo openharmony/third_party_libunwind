@@ -354,6 +354,10 @@ ohos_source_set("unwind_source_arm64") {
     ":unwind_config_arm64",
   ]
   sources = common_source
+
+  arm64_source -= [
+    "src/aarch64/getcontext.S"
+  ]
   sources += arm64_source
   sources -= remove_sources
 }
