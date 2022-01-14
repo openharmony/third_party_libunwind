@@ -1,0 +1,39 @@
+{
+    "name": "@ohos/libunwind",
+    "version": "",
+    "description": "Third-party open-source software libunwind | 三方开源软件libunwind",
+    "homePage": "https://gitee.com/openharmony",
+    "license": "MIT",
+    "repository": "https://gitee.com/openharmony/third_party_libunwind",
+    "domain": "os",
+    "language": "",
+    "publishAs": "code-segment",
+    "private": false,
+    "scripts": {},
+    "tags": [
+        "third_party"
+    ],
+    "keywords": [
+        "third-party",
+        "libunwind"
+    ],
+    "envs": {},
+    "dirs": {},
+    "segment": {
+        "destPath": "third_party/libunwind"
+    },
+    "component": {
+        "name": "thirdparty_libunwind",
+        "subsystem": "",
+        "syscap": [],
+        "features": [],
+        "adapted_system_type": [],
+        "rom": "",
+        "ram": "",
+        "build": {
+            "sub_component": [],
+            "inner_kits": [],
+            "test": []
+        }
+    }
+}
