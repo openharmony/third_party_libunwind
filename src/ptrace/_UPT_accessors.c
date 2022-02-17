@@ -25,6 +25,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#ifdef __aarch64__
+// we may use ptrace to get real mask
+static unw_word_t _UPT_ptrauth_insn_mask(unw_addr_space_t as, void *arg)
+{
+  (void) as;
+  (void) arg;
+  return 0xFFFFFF8000000000; // mask all bits from [63:40]
+}
+#endif
+
 unw_accessors_t _UPT_accessors =
   {
     .find_proc_info             = _UPT_find_proc_info,
@@ -34,5 +44,8 @@ unw_accessors_t _UPT_accessors =
     .access_reg                 = _UPT_access_reg,
     .access_fpreg               = _UPT_access_fpreg,
     .resume                     = _UPT_resume,
-    .get_proc_name              = _UPT_get_proc_name
+    .get_proc_name              = _UPT_get_proc_name,
+#ifdef __aarch64__
+    .ptrauth_insn_mask          = _UPT_ptrauth_insn_mask
+#endif
   };

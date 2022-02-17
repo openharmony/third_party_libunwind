@@ -364,6 +364,15 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 #endif
 }
 
+static inline unw_word_t clear_ptrauth(unw_word_t ip)
+{
+#ifdef __aarch64__
+  unw_word_t insn_mask = 0xFFFFFF8000000000; // mask all bits from [63:40];
+  return ip & (~insn_mask);
+#else
+  return ip;
+#endif
+}
 
 /* Provide a place holder for architecture to override for fast access
    to memory when known not to need to validate and know the access
