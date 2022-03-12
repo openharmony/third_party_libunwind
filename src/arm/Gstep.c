@@ -142,7 +142,7 @@ unw_step (unw_cursor_t *cursor)
       if (ret > 0)
         return 1;
       if (ret == -UNW_ESTOPUNWIND || ret == 0)
-        return ret;
+        ret = -1; // try frame pointer
     }
 
   /* Fall back on APCS frame parsing.
