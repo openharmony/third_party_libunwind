@@ -23,6 +23,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+/* Add For Cache MAP And ELF */
+#include <sys/types.h>
+/* Add For Cache MAP And ELF */
+
 #define UNW_VERSION_MAJOR 1
 #define UNW_VERSION_MINOR 3.1
 #define UNW_VERSION_EXTRA
@@ -207,6 +211,24 @@ typedef struct unw_save_loc
   unw_tdep_save_loc_t extra; /* target-dependent additional information */
 } unw_save_loc_t;
 
+/* Add For Cache MAP And ELF */
+typedef struct unw_map_cursor
+  {
+    void *map_list;
+    void *cur_map;
+  }
+unw_map_cursor_t;
+
+typedef struct unw_map
+  {
+    unw_word_t start;
+    unw_word_t end;
+    char *path;
+    int flags;
+  }
+unw_map_t;
+/* Add For Cache MAP And ELF */
+
 /* These routines work both for local and remote unwinding.  */
 
 #define unw_local_addr_space UNW_OBJ(local_addr_space)
@@ -266,5 +288,13 @@ extern int unw_handle_signal_frame(unw_cursor_t *);
 extern int unw_get_proc_name(unw_cursor_t *, char *, size_t, unw_word_t *);
 extern const char *unw_strerror(int);
 extern int unw_backtrace(void **, int);
+
+/* Add For Cache MAP And ELF */
+extern void unw_map_set (unw_addr_space_t, unw_map_cursor_t *);
+extern void unw_map_cursor_reset (unw_map_cursor_t *);
+extern int unw_map_cursor_create (unw_map_cursor_t *, pid_t);
+extern void unw_map_cursor_destroy (unw_map_cursor_t *);
+extern int unw_map_cursor_get (unw_map_cursor_t *, unw_map_t *);
+/* Add For Cache MAP And ELF */
 
 extern unw_addr_space_t unw_local_addr_space;

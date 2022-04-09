@@ -1,6 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002, 2005 Hewlett-Packard Co
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2013 The Android Open Source Project
 
 This file is part of libunwind.
 
@@ -23,19 +22,27 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "libunwind_i.h"
+#ifndef map_info_h
+#define map_info_h
 
-void
-unw_destroy_addr_space (unw_addr_space_t as)
-{
-#ifndef UNW_LOCAL_ONLY
-# if UNW_DEBUG
-  memset (as, 0, sizeof (*as));
-# endif
-  /* Add For Cache MAP And ELF */
-  if (as->map_list)
-    maps_destroy_list(as->map_list);
-  /* Add For Cache MAP And ELF */
-  free (as);
-#endif
-}
+struct map_info
+  {
+    uintptr_t start;
+    uintptr_t end;
+    uintptr_t offset;
+    int flags;
+    char *path;
+    struct elf_image ei;
+
+    struct map_info *next;
+  };
+
+int maps_is_readable(struct map_info *map_list, unw_word_t addr);
+
+int maps_is_writable(struct map_info *map_list, unw_word_t addr);
+
+struct map_info *maps_create_list(pid_t pid);
+
+void maps_destroy_list(struct map_info *map_info);
+
+#endif /* map_info_h */

@@ -74,6 +74,7 @@ common_source = [
   "src/ptrace/_UPT_put_unwind_info.c",
   "src/ptrace/_UPT_reg_offset.c",
   "src/ptrace/_UPT_resume.c",
+  "src/mi/maps.c",
 ]
 
 # as libc++ is static linked with libunwind.a
@@ -237,9 +238,7 @@ remove_sources += libunwind_dwarf_local_la_SOURCES
 remove_sources += ptrace_sources
 
 if (is_mingw) {
-  libunwind_la_SOURCES_os_linux = [ "src/os-linux.c" ]
   common_source += [ "src/mingw/pal-single-threaded.c" ]
-  common_source -= libunwind_la_SOURCES_os_linux
 }
 
 config("unwind_config_public") {

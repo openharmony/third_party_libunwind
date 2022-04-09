@@ -280,8 +280,7 @@ do {                                                                    \
 #else
 # include <stdio.h>
 # define Debug(level, /* format */ ...)
-# define Dprintf(/* format */ ...)                                      \
-  fprintf (stderr, /* format */ __VA_ARGS__)
+# define Dprintf(/* format */ ...)  
 #endif
 
 static ALWAYS_INLINE int
@@ -305,7 +304,9 @@ struct elf_image
 
 struct elf_dyn_info
   {
-    struct elf_image ei;
+    /* Add For Cache MAP And ELF*/
+    /* Removed: struct elf_image ei; */
+    /* Add For Cache MAP And ELF */
     unw_dyn_info_t di_cache;
     unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
 #if UNW_TARGET_IA64
@@ -318,8 +319,10 @@ struct elf_dyn_info
 
 static inline void invalidate_edi (struct elf_dyn_info *edi)
 {
-  if (edi->ei.image)
-    munmap (edi->ei.image, edi->ei.size);
+  /* Add For Cache MAP And ELF*/
+  /* Removed: if (edi->ei.image) */
+  /*            munmap (edi->ei.image, edi->ei.size); */
+  /* Add For Cache MAP And ELF */
   memset (edi, 0, sizeof (*edi));
   edi->di_cache.format = -1;
   edi->di_debug.format = -1;

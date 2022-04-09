@@ -28,68 +28,124 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/stat.h>
 
 #include "libunwind_i.h"
+#include "map_info.h"
 #include "os-linux.h"
 
-int
-tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-                    unsigned long *segbase, unsigned long *mapoff,
-                    char *path, size_t pathlen)
+/* Add For Cache MAP And ELF */
+struct map_info *
+maps_create_list(pid_t pid)
 {
   struct map_iterator mi;
-  int found = 0, rc;
-  unsigned long hi;
-  char root[sizeof ("/proc/0123456789/root")], *cp;
-  char *full_path;
-  struct stat st;
-
+  unsigned long start, end, offset, flags;
+  struct map_info *map_list = NULL;
+  struct map_info *cur_map;
 
   if (maps_init (&mi, pid) < 0)
-    return -1;
+    return NULL;
 
-  while (maps_next (&mi, segbase, &hi, mapoff, NULL))
-    if (ip >= *segbase && ip < hi)
-      {
-        found = 1;
+  while (maps_next (&mi, &start, &end, &offset, &flags))
+    {
+      cur_map = (struct map_info *)malloc(sizeof(struct map_info));
+      if (cur_map == NULL)
         break;
-      }
+      cur_map->next = map_list;
+      cur_map->start = start;
+      cur_map->end = end;
+      cur_map->offset = offset;
+      cur_map->flags = flags;
+      cur_map->path = strdup(mi.path);
+      cur_map->ei.size = 0;
+      cur_map->ei.image = NULL;
 
-  if (!found)
-    {
-      maps_close (&mi);
-      return -1;
+      map_list = cur_map;
     }
-
-  full_path = mi.path;
-
-  /* Get process root */
-  memcpy (root, "/proc/", 6);
-  cp = unw_ltoa (root + 6, pid);
-  assert (cp + 6 < root + sizeof (root));
-  memcpy (cp, "/root", 6);
-
-  if (!stat(root, &st) && S_ISDIR(st.st_mode))
-    {
-      full_path = (char*) malloc (strlen (root) + strlen (mi.path) + 1);
-      if (!full_path)
-        full_path = mi.path;
-      else
-        {
-          strcpy (full_path, root);
-          strcat (full_path, mi.path);
-        }
-    }
-
-  if (path)
-    {
-      strncpy(path, full_path, pathlen);
-    }
-  rc = elf_map_image (ei, full_path);
-
-  if (full_path && full_path != mi.path)
-    free (full_path);
 
   maps_close (&mi);
-  return rc;
+
+  return map_list;
+}
+
+void
+maps_destroy_list(struct map_info *map_info)
+{
+  struct map_info *map;
+  while (map_info)
+    {
+      map = map_info;
+      map_info = map->next;
+      if (map->ei.image != MAP_FAILED && map->ei.image != NULL)
+        munmap(map->ei.image, map->ei.size);
+      if (map->path)
+        free(map->path);
+      free(map);
+    }
+}
+
+static struct map_info *
+get_map(struct map_info *map_list, unw_word_t addr)
+{
+  while (map_list)
+    {
+      if (addr >= map_list->start && addr < map_list->end)
+        return map_list;
+      map_list = map_list->next;
+    }
+  return NULL;
+}
+
+int maps_is_readable(struct map_info *map_list, unw_word_t addr)
+{
+  /* If there is no map, assume everything is okay. */
+  if (map_list == NULL)
+    return 1;
+  struct map_info *map = get_map(map_list, addr);
+  if (map != NULL)
+    return map->flags & PROT_READ;
+  return 0;
+}
+
+int maps_is_writable(struct map_info *map_list, unw_word_t addr)
+{
+  /* If there is no map, assume everything is okay. */
+  if (map_list == NULL)
+    return 1;
+  struct map_info *map = get_map(map_list, addr);
+  if (map != NULL)
+    return map->flags & PROT_WRITE;
+  return 0;
+}
+/* Add For Cache MAP And ELF */
+
+struct map_info*
+tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
+{
+  /* Add For Cache MAP And ELF */
+  struct map_info *map;
+
+  if (as->map_list == NULL)
+    as->map_list = maps_create_list(pid);
+
+  map = as->map_list;
+  while (map)
+    {
+      if (ip >= map->start && ip < map->end)
+        break;
+      map = map->next;
+    }
+  if (!map)
+    return NULL;
+
+  if (map->ei.image == NULL)
+    {
+      int ret = elf_map_image(&map->ei, map->path);
+      if (ret < 0)
+        {
+          map->ei.image = NULL;
+          return NULL;
+        }
+    }
+  /* Add For Cache MAP And ELF */
+  return map;
 }
 
 #ifndef UNW_REMOTE_ONLY
