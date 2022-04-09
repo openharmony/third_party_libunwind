@@ -93,7 +93,7 @@ unw_step (unw_cursor_t *cursor)
 
   /* Check if this is a signal frame. */
   if (unw_is_signal_frame (cursor) > 0){
-      /* Open Harmony add for using lr backtrace when pc is zero */
+      /* Add for using lr backtrace when pc is zero */
       ret = arm_handle_signal_frame (cursor);
       if ( c->dwarf.ip == 0x0 )
       {
@@ -109,7 +109,7 @@ unw_step (unw_cursor_t *cursor)
           }
       }
       return ret;
-      /* Open Harmony add for using lr backtrace when pc is zero */
+      /* Add for using lr backtrace when pc is zero */
   }
 
 #ifdef CONFIG_DEBUG_FRAME

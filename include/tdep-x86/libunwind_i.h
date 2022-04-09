@@ -34,6 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdatomic.h>
 
 #include "elf32.h"
+/* Add For Cache MAP And ELF */
+#include "map_info.h"
+/* Add For Cache MAP And ELF */
 #include "mempool.h"
 #include "dwarf.h"
 
@@ -52,6 +55,11 @@ struct unw_addr_space
     unw_word_t dyn_info_list_addr;      /* (cached) dyn_info_list_addr */
     struct dwarf_rs_cache global_cache;
     struct unw_debug_frame_list *debug_frames;
+    /* Add For Cache MAP And ELF */
+#if defined(__linux__)
+    struct map_info *map_list;
+#endif
+    /* Add For Cache MAP And ELF */
    };
 
 struct cursor
@@ -278,9 +286,10 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                                      unw_dyn_info_t *di, unw_proc_info_t *pi,
                                      int need_unwind_info, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
-extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-                               unsigned long *segbase, unsigned long *mapoff,
-                               char *path, size_t pathlen);
+/* Add For Cache MAP And ELF */
+extern struct map_info *tdep_get_elf_image (unw_addr_space_t as, pid_t pid,
+					    unw_word_t ip);
+/* Add For Cache MAP And ELF */
 extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);

@@ -31,6 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 struct dwarf_cursor;    /* forward-declaration */
 struct elf_dyn_info;
+struct elf_image;
 
 #include "dwarf-config.h"
 
@@ -170,6 +171,8 @@ typedef enum
     DW_CFA_offset_extended_sf   = 0x11,
     DW_CFA_def_cfa_sf           = 0x12,
     DW_CFA_def_cfa_offset_sf    = 0x13,
+    DW_CFA_val_offset           = 0x14,
+    DW_CFA_val_offset_sf        = 0x15,
     DW_CFA_val_expression       = 0x16,
     DW_CFA_lo_user              = 0x1c,
     DW_CFA_MIPS_advance_loc8    = 0x1d,
@@ -231,6 +234,7 @@ typedef enum
     DWARF_WHERE_REG,            /* register saved in another register */
     DWARF_WHERE_EXPR,           /* register saved */
     DWARF_WHERE_VAL_EXPR,       /* register has computed value */
+    DWARF_WHERE_VAL,            /* register that is the value */
   }
 dwarf_where_t;
 
@@ -419,10 +423,12 @@ extern int dwarf_search_unwind_table (unw_addr_space_t as,
                                       unw_dyn_info_t *di,
                                       unw_proc_info_t *pi,
                                       int need_unwind_info, void *arg);
-
-extern int dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                                    char *path, unw_word_t segbase, unw_word_t mapoff,
-                                    unw_word_t ip);
+/* Add For Cache MAP And ELF */
+extern int dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
+				    unw_addr_space_t as, char *path,
+				    unw_word_t segbase, unw_word_t mapoff,
+				    unw_word_t ip);
+/* Add For Cache MAP And ELF */
 extern void dwarf_put_unwind_info (unw_addr_space_t as,
                                    unw_proc_info_t *pi, void *arg);
 extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,

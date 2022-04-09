@@ -37,11 +37,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
 #endif
-
+/* Add For Cache MAP And ELF */
 int
-dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                         char *path, unw_word_t segbase, unw_word_t mapoff,
-                         unw_word_t ip)
+dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
+			 unw_addr_space_t as, char *path,
+			 unw_word_t segbase, unw_word_t mapoff, unw_word_t ip)
+/* Add For Cache MAP And ELF */
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
@@ -59,11 +60,15 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
 
-  if (!elf_w(valid_object) (&edi->ei))
+  /* Add For Cache MAP And ELF */
+  if (!elf_w(valid_object) (ei))
+  /* Add For Cache MAP And ELF */
     return -UNW_ENOINFO;
 
-  ehdr = edi->ei.image;
-  phdr = (Elf_W(Phdr) *) ((char *) edi->ei.image + ehdr->e_phoff);
+  /* Add For Cache MAP And ELF */
+  ehdr = ei->image;
+  phdr = (Elf_W(Phdr) *) ((char *) ei->image + ehdr->e_phoff);
+  /* Add For Cache MAP And ELF */
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
@@ -78,9 +83,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
           if ((phdr[i].p_offset & (-PAGE_SIZE)) == mapoff)
             ptxt = phdr + i;
-          if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
-            max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
-          break;
+          /* Add For Cache MAP And ELF */
+	  if ((uintptr_t) ei->image + phdr->p_filesz > max_load_addr)
+	    max_load_addr = (uintptr_t) ei->image + phdr->p_filesz;
+	  break;
+          /* Add For Cache MAP And ELF */
 
         case PT_GNU_EH_FRAME:
 #if defined __sun
@@ -118,8 +125,10 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
           /* For dynamicly linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
+		/* Add For Cache MAP And ELF */
                 Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-                                                 + (char *) edi->ei.image);
+						 + (char *) ei->image);
+		/* Add For Cache MAP And ELF */
           for (; dyn->d_tag != DT_NULL; ++dyn)
             if (dyn->d_tag == DT_PLTGOT)
               {
@@ -135,8 +144,10 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
            absolute.  */
         edi->di_cache.gp = 0;
 
+      /* Add For Cache MAP And ELF */
       hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
-                                           + (char *) edi->ei.image);
+					   + (char *) ei->image);
+      /* Add For Cache MAP And ELF */
       if (hdr->version != DW_EH_VERSION)
         {
           Debug (1, "table `%s' has unexpected version %d\n",
@@ -202,15 +213,16 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
       /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
       edi->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
       edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
-                                       + (addr - to_unw_word (edi->ei.image)
+				       + (addr - (unw_word_t) ei->image
                                           - peh_hdr->p_offset));
 
       /* For the binary-search table in the eh_frame_hdr, data-relative
          means relative to the start of that section... */
+      /* Add For Cache MAP And ELF */
       edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
-                                    + (to_unw_word (hdr) -
-                                       to_unw_word (edi->ei.image)
-                                       - peh_hdr->p_offset));
+				    + ((unw_word_t) hdr - (unw_word_t) ei->image
+				       - peh_hdr->p_offset));
+      /* Add For Cache MAP And ELF */
       found = 1;
     }
 
