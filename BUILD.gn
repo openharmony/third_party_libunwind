@@ -260,6 +260,10 @@ config("unwind_config_public") {
     "-Wno-unused-variable",
   ]
 
+  if (defined(ohos_lite)) {
+    cflags += [ "-fPIC" ]
+  }
+
   if (target_cpu == "arm") {
     include_dirs += [ "include/tdep-arm" ]
     cflags += [
@@ -396,9 +400,16 @@ ohos_source_set("unwind_source") {
   }
 }
 
-ohos_shared_library("libunwind") {
-  deps = [ ":unwind_source" ]
-  public_configs = [ ":unwind_config_public" ]
-  part_name = "faultloggerd"
-  subsystem_name = "hiviewdfx"
+if (defined(ohos_lite)) {
+  shared_library("libunwind") {
+    deps = [ ":unwind_source" ]
+    public_configs = [ ":unwind_config_public" ]
+  }
+} else {
+  ohos_shared_library("libunwind") {
+    deps = [ ":unwind_source" ]
+    public_configs = [ ":unwind_config_public" ]
+    part_name = "faultloggerd"
+    subsystem_name = "hiviewdfx"
+  }
 }
