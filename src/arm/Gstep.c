@@ -30,8 +30,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <signal.h>
 
-#define arm_exidx_step  UNW_OBJ(arm_exidx_step)
+#include "map_info.h"
 
+#define arm_exidx_step  UNW_OBJ(arm_exidx_step)
 static inline int
 arm_exidx_step (struct cursor *c)
 {
@@ -79,7 +80,6 @@ arm_exidx_step (struct cursor *c)
     }
 
   c->dwarf.pi_valid = 0;
-
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
 

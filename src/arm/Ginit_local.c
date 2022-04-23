@@ -48,6 +48,8 @@ unw_init_local_common (unw_cursor_t *cursor, unw_context_t *uc, unsigned use_pre
 
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = uc;
+  c->dwarf.as->cursor = c;
+  c->dwarf.cached_map = NULL;
 
   return common_init (c, use_prev_instr);
 }

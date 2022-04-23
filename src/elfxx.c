@@ -157,6 +157,80 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   return ret;
 }
 
+static int
+elf_w (iterate_symbol) (unw_addr_space_t as,
+                        unw_word_t ip,
+                        struct elf_image *ei,
+                        Elf_W (Addr) load_offset,
+                        symbol_callback cb)
+{
+  size_t syment_size;
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Sym) *sym, *symtab, *symtab_end;
+  Elf_W (Shdr) *shdr;
+  Elf_W (Addr) val;
+  Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
+  int i, ret = -UNW_ENOINFO;
+  char *strtab;
+  uint64_t start_offset = 0;
+  uint64_t end_offset = 0;
+  uint64_t nameOffset = 0;
+
+  if (!elf_w (valid_object) (ei))
+    return -UNW_ENOINFO;
+
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return -UNW_ENOINFO;
+
+  for (i = 0; i < ehdr->e_shnum; ++i)
+    {
+      switch (shdr->sh_type)
+        {
+        case SHT_SYMTAB:
+        case SHT_DYNSYM:
+          symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
+          symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
+          syment_size = shdr->sh_entsize;
+          strtab = elf_w (string_table) (ei, shdr->sh_link);
+          if (!strtab)
+            break;
+
+          ei->strtab = strtab;
+          for (sym = symtab;
+               sym < symtab_end;
+               sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
+            {
+              if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
+                  && sym->st_shndx != SHN_UNDEF)
+                {
+                  val = sym->st_value;
+                  if (sym->st_shndx != SHN_ABS)
+                    val += load_offset;
+                  if (tdep_get_func_addr (as, val, &val) < 0)
+                    continue;
+
+                  Debug (16, "0x%016lx info=0x%02x %s\n",
+                         (long) val, sym->st_info, strtab + sym->st_name);
+
+                  start_offset = val;
+                  end_offset = val + sym->st_size;
+                  if (ip > start_offset && ip < end_offset) {
+                    nameOffset = (uint64_t)sym->st_name;
+                    cb(start_offset, end_offset, nameOffset);
+                  }
+                }
+            }
+          break;
+
+        default:
+          break;
+        } 
+      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
+    }
+  return ret;
+}
+
 static Elf_W (Addr)
 elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
                          unsigned long mapoff)
@@ -284,7 +358,7 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
-  load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
+  load_offset = segbase - ei->load_offset;
   ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
@@ -390,7 +464,7 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
     {
       ret = elf_map_image(ei, file);
       if (ret)
-	return ret;
+        return ret;
     }
 
   prev_image = ei->image;
@@ -475,4 +549,32 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
   }
 
   return 0;
+}
+
+int elf_w (iterator_elf_symbols) (unw_addr_space_t as,
+                                  unw_word_t ip,
+                                  struct elf_image *ei,
+                                  unsigned long segbase,
+                                  unsigned long mapoff,
+                                  symbol_callback cb)
+{
+  Elf_W (Addr) load_offset;
+  int ret;
+
+  load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
+  ret = elf_w (iterate_symbol) (as, ip, ei, load_offset, cb);
+
+  struct elf_image mdi;
+  if (elf_w (extract_minidebuginfo) (ei, &mdi))
+    {
+      int ret_mdi = elf_w (iterate_symbol) (as, ip, ei, load_offset, cb);
+      if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
+        {
+          ret = ret_mdi;
+        }
+
+      munmap (mdi.image, mdi.size);
+    }
+
+  return ret;
 }

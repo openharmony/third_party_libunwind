@@ -35,6 +35,8 @@ struct map_info
     struct elf_image ei;
 
     struct map_info *next;
+    int sz;
+    void* buf;
   };
 
 int maps_is_readable(struct map_info *map_list, unw_word_t addr);
