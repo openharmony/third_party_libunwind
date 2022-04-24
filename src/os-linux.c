@@ -87,6 +87,8 @@ void
 maps_destroy_list(struct map_info *map_info)
 {
   struct map_info *map;
+  int sz  = map_info->sz;
+  void* buf = map_info->buf;
   while (map_info)
     {
       map = map_info;
@@ -99,10 +101,11 @@ maps_destroy_list(struct map_info *map_info)
         free(map->path);
         map->path = NULL;
       }
+      map = NULL;
     }
-  if (map->buf != NULL) {
-    munmap(map->buf, map->sz * sizeof(struct map_info));
-    //map->buf = NULL;
+  if (buf != NULL) {
+    munmap(buf, sz * sizeof(struct map_info));
+    buf = NULL;
   }
 }
 
@@ -217,6 +220,10 @@ unw_word_t get_previous_instr_sz(unw_cursor_t *cursor)
     }
 #elif defined(UNW_TARGET_ARM64)
   sz = 4;
+#elif defined(UNW_TARGET_X86)
+  sz = 1;
+#elif defined(UNW_TARGET_x86_64)
+  sz = 1;
 #else
 // other arch need to be add here.
 #endif

@@ -90,7 +90,7 @@ unw_iterator_elf_symbols(unw_cursor_t *cursor, unw_word_t ip, symbol_callback cb
   }
 
   struct cursor *c = (struct cursor *) cursor;
-  return elf_w (iterator_elf_symbols)(c->dwarf.as, ip, &map->ei, map->start, map->offset, cb);
+  return elf_w (iterator_elf_symbols)(c->dwarf.as, ip, &map->ei, map->start, map->end, map->offset, cb);
 }
 
 int

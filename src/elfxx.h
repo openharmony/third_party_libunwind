@@ -62,6 +62,7 @@ extern int elf_w (iterator_elf_symbols) (unw_addr_space_t as,
                                          unw_word_t ip,
                                          struct elf_image *ei,
                                          unsigned long segbase,
+                                         unsigned long segend,
                                          unsigned long mapoff,
                                          symbol_callback cb);
 
