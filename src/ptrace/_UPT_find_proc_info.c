@@ -35,10 +35,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static int
 get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_word_t ip)
 {
-  /* Add For Cache MAP And ELF */
-  struct map_info *map;
-  /* Add For Cache MAP And ELF */
 
+  struct map_info *map;
 #if UNW_TARGET_IA64 && defined(__linux__)
   if (!edi->ktab.start_ip && _Uia64_get_kernel_table (&edi->ktab) < 0)
     return -UNW_ENOINFO;
@@ -59,7 +57,7 @@ get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_w
 
   invalidate_edi(edi);
 
-  /* Add For Cache MAP And ELF */
+  /* Add For Cache MAP And ELF */ 
   map = tdep_get_elf_image (as, pid, ip);
   if (map == NULL)
     return -UNW_ENOINFO;

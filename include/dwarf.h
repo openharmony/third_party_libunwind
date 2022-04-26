@@ -32,6 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 struct dwarf_cursor;    /* forward-declaration */
 struct elf_dyn_info;
 struct elf_image;
+struct map_info;
 
 #include "dwarf-config.h"
 
@@ -333,6 +334,9 @@ typedef struct dwarf_cursor
 
     short hint; /* faster lookup of the rs cache */
     short prev_rs;
+    unw_word_t rel_pc; /* pc related to the beginning of the elf, used for addr2line */
+    unw_word_t cached_ip;              /* cached instruction pointer */
+    struct map_info *cached_map; /* memory mapping info associated with cached ip */
   }
 dwarf_cursor_t;
 

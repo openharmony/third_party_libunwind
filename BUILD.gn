@@ -398,6 +398,8 @@ ohos_source_set("unwind_source") {
     sources += x64_source
     public_configs = [ ":unwind_config_x64" ]
   }
+
+  sources += [ "src/os-ohos.c" ]
 }
 
 if (defined(ohos_lite)) {

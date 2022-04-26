@@ -77,7 +77,18 @@ struct unw_addr_space
     /* Add For Cache MAP And ELF */
     struct map_info *map_list;
     /* Add For Cache MAP And ELF */
+    unw_cursor_t *cursor;
    };
+
+static inline struct cursor *
+get_cursor_from_as(unw_addr_space_t as)
+{
+  if (as->cursor) {
+    return (struct cursor *)(as->cursor);
+  }
+
+  return NULL;
+}
 
 struct cursor
   {

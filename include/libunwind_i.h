@@ -280,7 +280,7 @@ do {                                                                    \
 #else
 # include <stdio.h>
 # define Debug(level, /* format */ ...)
-# define Dprintf(/* format */ ...)  
+# define Dprintf(/* format */ ...)
 #endif
 
 static ALWAYS_INLINE int
@@ -296,17 +296,13 @@ extern unw_word_t _U_dyn_info_list_addr (void);
 
 /* This is needed/used by ELF targets only.  */
 
-struct elf_image
-  {
-    void *image;                /* pointer to mmap'd image */
-    size_t size;                /* (file-) size of the image */
-  };
-
 struct elf_dyn_info
   {
     /* Add For Cache MAP And ELF*/
     /* Removed: struct elf_image ei; */
     /* Add For Cache MAP And ELF */
+    unw_word_t start_ip;
+    unw_word_t end_ip;
     unw_dyn_info_t di_cache;
     unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
 #if UNW_TARGET_IA64
@@ -315,6 +311,17 @@ struct elf_dyn_info
 #if UNW_TARGET_ARM
     unw_dyn_info_t di_arm;      /* additional table info for .ARM.exidx */
 #endif
+  };
+
+struct elf_image
+  {
+    void *image;                /* pointer to mmap'd image */
+    size_t size;                /* (file-) size of the image */
+    int has_dyn_info;
+    struct elf_dyn_info elf_dyn_info;
+    int load_bias;
+    int load_offset;
+    char* strtab;
   };
 
 static inline void invalidate_edi (struct elf_dyn_info *edi)

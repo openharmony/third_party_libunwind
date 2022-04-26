@@ -25,13 +25,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <limits.h>
 #include <stdio.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 
 #include "libunwind_i.h"
 #include "map_info.h"
 #include "os-linux.h"
 
-/* Add For Cache MAP And ELF */
 struct map_info *
 maps_create_list(pid_t pid)
 {
@@ -39,15 +39,28 @@ maps_create_list(pid_t pid)
   unsigned long start, end, offset, flags;
   struct map_info *map_list = NULL;
   struct map_info *cur_map;
-
-  if (maps_init (&mi, pid) < 0)
+  struct map_info *buf;
+  int sz;
+  int index = 0;
+  if ((sz = maps_init (&mi, pid)) < 0)
     return NULL;
+
+  if (sz < 0 || sz > 65536) {
+    return NULL;
+  }
+
+  buf = (struct map_info*)mmap(NULL, sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+  if (buf == NULL) {
+    return NULL;
+  }
 
   while (maps_next (&mi, &start, &end, &offset, &flags))
     {
-      cur_map = (struct map_info *)malloc(sizeof(struct map_info));
-      if (cur_map == NULL)
+      if (index >= sz) {
         break;
+      }
+
+      cur_map = &buf[index];
       cur_map->next = map_list;
       cur_map->start = start;
       cur_map->end = end;
@@ -56,8 +69,13 @@ maps_create_list(pid_t pid)
       cur_map->path = strdup(mi.path);
       cur_map->ei.size = 0;
       cur_map->ei.image = NULL;
-
+      cur_map->ei.has_dyn_info = 0;
+      cur_map->ei.load_bias = -1;
+      cur_map->ei.strtab = NULL;
+      cur_map->sz = sz;
+      cur_map->buf = buf;
       map_list = cur_map;
+      index = index + 1;
     }
 
   maps_close (&mi);
@@ -69,27 +87,56 @@ void
 maps_destroy_list(struct map_info *map_info)
 {
   struct map_info *map;
+  int sz  = map_info->sz;
+  void* buf = map_info->buf;
   while (map_info)
     {
       map = map_info;
       map_info = map->next;
-      if (map->ei.image != MAP_FAILED && map->ei.image != NULL)
+      if (map->ei.image != MAP_FAILED && map->ei.image != NULL) {
         munmap(map->ei.image, map->ei.size);
-      if (map->path)
+        map->ei.image = NULL;
+      }
+      if (map->path) {
         free(map->path);
-      free(map);
+        map->path = NULL;
+      }
+      map = NULL;
     }
+  if (buf != NULL) {
+    munmap(buf, sz * sizeof(struct map_info));
+    buf = NULL;
+  }
 }
 
 static struct map_info *
 get_map(struct map_info *map_list, unw_word_t addr)
 {
-  while (map_list)
-    {
-      if (addr >= map_list->start && addr < map_list->end)
-        return map_list;
-      map_list = map_list->next;
+  if (map_list == NULL) {
+    return NULL;
+  }
+
+  struct map_info* buf = map_list->buf;
+  if (buf == NULL) {
+    return NULL;
+  }
+
+  int begin = 0;
+  int end = map_list->sz - 1;
+  while (begin <= end) {
+    int mid = begin + ((end - begin) / 2);
+    if (addr < buf[mid].start) {
+      end = mid - 1;
+    } else if (addr <= buf[mid].end) {
+      return &buf[mid];
+    } else {
+      begin = mid + 1;
     }
+  }
+
+  if ((addr >= buf[begin].start) && (addr <= buf[begin].end)) {
+    return &buf[begin];
+  }
   return NULL;
 }
 
@@ -114,24 +161,22 @@ int maps_is_writable(struct map_info *map_list, unw_word_t addr)
     return map->flags & PROT_WRITE;
   return 0;
 }
-/* Add For Cache MAP And ELF */
 
 struct map_info*
 tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
 {
-  /* Add For Cache MAP And ELF */
   struct map_info *map;
+  struct cursor* cursor = get_cursor_from_as(as);
+  int find_cached_map = ((cursor != NULL) && (cursor->dwarf.ip == ip));
+  if (find_cached_map  &&
+    (cursor->dwarf.ip == cursor->dwarf.cached_ip) && cursor->dwarf.cached_map != NULL) {
+    return cursor->dwarf.cached_map;
+  }
 
-  if (as->map_list == NULL)
+  if (as->map_list == NULL && pid > 0)
     as->map_list = maps_create_list(pid);
 
-  map = as->map_list;
-  while (map)
-    {
-      if (ip >= map->start && ip < map->end)
-        break;
-      map = map->next;
-    }
+  map = get_map(as->map_list, ip);
   if (!map)
     return NULL;
 
@@ -144,9 +189,47 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
           return NULL;
         }
     }
-  /* Add For Cache MAP And ELF */
+
+  if (find_cached_map) {
+    cursor->dwarf.cached_map = map;
+    cursor->dwarf.cached_ip = ip;
+  }
   return map;
 }
+
+unw_word_t get_previous_instr_sz(unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  unw_addr_space_t as = c->dwarf.as;
+  unw_accessors_t *a = unw_get_accessors (as);
+  unw_word_t ip = c->dwarf.ip;
+  int sz = 4;
+#if defined(UNW_TARGET_ARM)
+  if (ip)
+    {
+      if (ip & 1)
+        {
+          void *arg;
+          unw_word_t value;
+          arg = c->dwarf.as_arg;
+          // 0xe000f000 ---> machine code of blx Instr (blx label)
+          if (ip < 5 || (*a->access_mem) (as, ip - 5, &value, 0, arg) < 0 ||
+              (value & 0xe000f000) != 0xe000f000)
+            sz = 2;
+        }
+    }
+#elif defined(UNW_TARGET_ARM64)
+  sz = 4;
+#elif defined(UNW_TARGET_X86)
+  sz = 1;
+#elif defined(UNW_TARGET_x86_64)
+  sz = 1;
+#else
+// other arch need to be add here.
+#endif
+  return sz;
+}
+
 
 #ifndef UNW_REMOTE_ONLY
 

@@ -53,6 +53,8 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   unw_proc_info_t pi;
   unw_accessors_t *a;
   Elf_W(Ehdr) *ehdr;
+  int first_load_section = 0;
+  int first_load_offset = 0;
 #if UNW_TARGET_ARM
   const Elf_W(Phdr) *parm_exidx = NULL;
 #endif
@@ -64,17 +66,34 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   if (!elf_w(valid_object) (ei))
   /* Add For Cache MAP And ELF */
     return -UNW_ENOINFO;
-
+  
+  if (ei->has_dyn_info == 1 &&
+      ei->elf_dyn_info.start_ip <= ip &&
+      ei->elf_dyn_info.end_ip >= ip) {
+    *edi = ei->elf_dyn_info;
+    return 1; // found
+  }
   /* Add For Cache MAP And ELF */
   ehdr = ei->image;
   phdr = (Elf_W(Phdr) *) ((char *) ei->image + ehdr->e_phoff);
   /* Add For Cache MAP And ELF */
 
+
+  unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
       switch (phdr[i].p_type)
         {
         case PT_LOAD:
+          if ((phdr[i].p_flags & PF_X) == 0) {
+            continue;
+          }
+
+          if (first_load_section == 0) {
+            ei->load_bias = phdr[i].p_vaddr - phdr[i].p_offset;
+            first_load_section = 1;
+          }
+
           if (phdr[i].p_vaddr < start_ip)
             start_ip = phdr[i].p_vaddr;
 
@@ -83,10 +102,20 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 
           if ((phdr[i].p_offset & (-PAGE_SIZE)) == mapoff)
             ptxt = phdr + i;
+
+          if (first_load_offset == 0) {
+            if ((phdr[i].p_offset & pagesize_alignment_mask) == mapoff) {
+              ei->load_offset = phdr[i].p_vaddr - (phdr[i].p_offset & (~pagesize_alignment_mask));
+              first_load_offset = 1;
+            } else {
+              ei->load_offset = 0;
+            }
+          }
+
           /* Add For Cache MAP And ELF */
-	  if ((uintptr_t) ei->image + phdr->p_filesz > max_load_addr)
-	    max_load_addr = (uintptr_t) ei->image + phdr->p_filesz;
-	  break;
+          if ((uintptr_t) ei->image + phdr->p_filesz > max_load_addr)
+            max_load_addr = (uintptr_t) ei->image + phdr->p_filesz;
+          break;
           /* Add For Cache MAP And ELF */
 
         case PT_GNU_EH_FRAME:
@@ -244,6 +273,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   found = dwarf_find_debug_frame (found, &edi->di_debug, ip, load_base, path,
                                   start_ip, end_ip);
 #endif
-
+  if (found == 1) {
+    edi->start_ip = start_ip;
+    edi->end_ip = end_ip;
+    ei->elf_dyn_info = *edi;
+    ei->has_dyn_info = 1;
+  }
   return found;
 }
