@@ -82,30 +82,12 @@ unw_get_maps (unw_cursor_t *cursor)
 -1 failed, not found
 */
 int
-unw_iterator_elf_symbols(unw_cursor_t *cursor, unw_word_t ip, symbol_callback cb)
+unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end)
 {
   struct map_info* map = unw_get_map(cursor);
   if (map == NULL) {
     return -1;
   }
 
-  struct cursor *c = (struct cursor *) cursor;
-  return elf_w (iterator_elf_symbols)(c->dwarf.as, ip, &map->ei, map->start, map->end, map->offset, cb);
-}
-
-int
-unw_get_proc_name_by_offset(unw_cursor_t *cursor, uint64_t str_offset, char* buf, int sz)
-{
-  struct map_info* map = unw_get_map(cursor);
-  if (map == NULL) {
-    return -1;
-  }
-
-  if (map->ei.strtab == NULL) {
-    return -1;
-  }
-
-  strncpy (buf, map->ei.strtab + str_offset, sz);
-  buf[sz - 1] = '\0';
-  return 0;
+  return elf_w (get_symbol_info_in_image)(&(map->ei), map->start, map->offset, pc, buf_sz, buf, sym_start, sym_end);
 }

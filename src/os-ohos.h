@@ -22,13 +22,11 @@
 struct map_info;
 struct unw_cursor;
 
-typedef void (*symbol_callback)(uint64_t start_offset, uint64_t end_offset, uint64_t str_offset);
 extern unw_word_t unw_get_rel_pc (struct unw_cursor *cursor);
 extern unw_word_t unw_get_previous_instr_sz(unw_cursor_t *cursor);
 extern struct map_info* unw_get_map (struct unw_cursor *cursor);
 extern struct map_info* unw_get_maps (struct unw_cursor *cursor);
-extern int unw_iterator_elf_symbols(struct unw_cursor *cursor, unw_word_t ip, symbol_callback cb);
-extern int unw_get_proc_name_by_offset(struct unw_cursor *cursor,  uint64_t str_offset, char* buf, int sz);
+extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 extern void unw_set_target_pid(unw_addr_space_t as, int pid);
 
 #endif

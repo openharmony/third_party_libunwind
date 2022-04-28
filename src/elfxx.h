@@ -44,8 +44,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define elf_w(x)       _Uelf64_##x
 #endif
 
-typedef void (*symbol_callback)(uint64_t start_offset, uint64_t end_offset, uint64_t str_offset);
-
 extern int elf_w (get_proc_name) (unw_addr_space_t as,
                                   pid_t pid, unw_word_t ip,
                                   char *buf, size_t len,
@@ -58,13 +56,14 @@ extern int elf_w (get_proc_name_in_image) (unw_addr_space_t as,
                                            unw_word_t ip,
                                            char *buf, size_t buf_len, unw_word_t *offp);
 
-extern int elf_w (iterator_elf_symbols) (unw_addr_space_t as,
-                                         unw_word_t ip,
-                                         struct elf_image *ei,
-                                         unsigned long segbase,
-                                         unsigned long segend,
-                                         unsigned long mapoff,
-                                         symbol_callback cb);
+extern int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
+                                             unsigned long segbase,
+                                             unsigned long mapoff,
+                                             uint64_t pc,
+                                             int buf_sz,
+                                             char *buf,
+                                             uint64_t *sym_start,
+                                             uint64_t *sym_end);
 
 extern Elf_W (Shdr)* elf_w (find_section) (struct elf_image *ei, const char* secname);
 extern int elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local);
