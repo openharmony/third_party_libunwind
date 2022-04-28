@@ -24,8 +24,6 @@ extern "C" {
 #include "libunwind_i.h"
 #include "map_info.h"
 
-// callback defintion when iterating elf symbol table
-typedef void (*symbol_callback)(uint64_t start_offset, uint64_t end_offset, uint64_t str_offset);
 // Unwind using specific method
 // target dependent
 extern int uwn_step(unw_cursor_t *, int method);
@@ -38,11 +36,8 @@ extern unw_word_t unw_get_previous_instr_sz(unw_cursor_t *);
 extern struct map_info* unw_get_map (unw_cursor_t *);
 // Get map info list of current unwind target
 extern struct map_info* unw_get_maps (unw_cursor_t *);
-// Loop the symbol table to get all the symbol address
-// we may cache them in caller code
-extern int unw_iterator_elf_symbols(unw_cursor_t *, unw_word_t ip, symbol_callback);
-// Read symbol name from elf string table
-extern int unw_get_proc_name_by_offset(unw_cursor_t *, uint64_t str_offset, char* buf, int sz);
+// Loop the symbol table to find matched symbol
+extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 // Set unwind process id, for caching maps
 extern void unw_set_target_pid(unw_addr_space_t as, int pid);
 #ifdef __cplusplus
