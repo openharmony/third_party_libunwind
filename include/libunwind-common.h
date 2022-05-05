@@ -259,6 +259,9 @@ unw_map_t;
 #define unw_flush_cache UNW_ARCH_OBJ(flush_cache)
 #define unw_strerror UNW_ARCH_OBJ(strerror)
 
+#define unw_init_local_addr_space UNW_OBJ(init_local_addr_space)
+#define unw_init_local_with_as UNW_OBJ(init_local_with_as)
+
 extern unw_addr_space_t unw_create_addr_space(unw_accessors_t *, int);
 extern void unw_destroy_addr_space(unw_addr_space_t);
 extern unw_accessors_t *unw_get_accessors(unw_addr_space_t);
@@ -289,12 +292,10 @@ extern int unw_get_proc_name(unw_cursor_t *, char *, size_t, unw_word_t *);
 extern const char *unw_strerror(int);
 extern int unw_backtrace(void **, int);
 
-/* Add For Cache MAP And ELF */
 extern void unw_map_set (unw_addr_space_t, unw_map_cursor_t *);
 extern void unw_map_cursor_reset (unw_map_cursor_t *);
 extern int unw_map_cursor_create (unw_map_cursor_t *, pid_t);
 extern void unw_map_cursor_destroy (unw_map_cursor_t *);
 extern int unw_map_cursor_get (unw_map_cursor_t *, unw_map_t *);
-/* Add For Cache MAP And ELF */
 
 extern unw_addr_space_t unw_local_addr_space;

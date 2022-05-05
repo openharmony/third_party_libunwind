@@ -43,6 +43,8 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
   Debug (1, "(cursor=%p)\n", c);
 
   c->dwarf.as = as;
+  c->dwarf.cached_map = NULL;
+  c->dwarf.rel_pc = 0;
   if (as == unw_local_addr_space)
     {
       c->dwarf.as_arg = dwarf_build_as_arg(as_arg, /*validate*/ 0);

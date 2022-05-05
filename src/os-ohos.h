@@ -28,5 +28,8 @@ extern struct map_info* unw_get_map (struct unw_cursor *cursor);
 extern struct map_info* unw_get_maps (struct unw_cursor *cursor);
 extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 extern void unw_set_target_pid(unw_addr_space_t as, int pid);
+extern void unw_init_local_address_space(unw_addr_space_t* as);
+extern void unw_destroy_local_address_space(unw_addr_space_t as);
+extern int unw_get_symbol_info_by_pc(unw_addr_space_t as, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 
 #endif

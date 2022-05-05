@@ -15,10 +15,15 @@
 
 #include "os-ohos.h"
 
+#include <unistd.h>
+
 #include "elfxx.h"
 #include "libunwind_i.h"
 
+#define unw_init_local_addr_space UNW_OBJ(init_local_addr_space)
+
 extern unw_word_t get_previous_instr_sz(unw_cursor_t *cursor);
+extern void unw_init_local_addr_space (unw_addr_space_t as);
 
 void 
 unw_set_target_pid(unw_addr_space_t as, int pid)
@@ -67,7 +72,7 @@ struct map_info*
 unw_get_map (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  return tdep_get_elf_image (c->dwarf.as, c->dwarf.as->pid, c->dwarf.ip);
+  return tdep_get_elf_image(c->dwarf.as, c->dwarf.as->pid, c->dwarf.ip);
 }
 
 struct map_info*
@@ -90,4 +95,64 @@ unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *bu
   }
 
   return elf_w (get_symbol_info_in_image)(&(map->ei), map->start, map->offset, pc, buf_sz, buf, sym_start, sym_end);
+}
+
+int
+unw_get_symbol_info_by_pc(unw_addr_space_t as, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end)
+{
+#ifdef UNW_REMOTE_ONLY
+  return -1;
+#else
+  if (as->map_list == NULL) {
+    return -1;
+  }
+
+  struct map_info* map = tdep_get_elf_image(as, as->pid, pc);
+  if (map == NULL) {
+    return -1;
+  }
+
+  return elf_w (get_symbol_info_in_image)(&(map->ei), map->start, map->offset, pc, buf_sz, buf, sym_start, sym_end);
+#endif
+}
+
+void
+unw_init_local_address_space(unw_addr_space_t* as)
+{
+#ifdef UNW_REMOTE_ONLY
+  return;
+#else
+  if (as == NULL) {
+    return;
+  }
+
+  if (*as != NULL) {
+    return;
+  }
+
+  (*as)= (unw_addr_space_t)calloc(1, sizeof(struct unw_addr_space));
+  unw_init_local_addr_space(*as);
+  int pid = getpid();
+  (*as)->pid = pid;
+  (*as)->map_list = maps_create_list(pid);
+#endif
+}
+
+void
+ unw_destroy_local_address_space(unw_addr_space_t as)
+{
+#ifdef UNW_REMOTE_ONLY
+  return;
+#else
+  if (as == NULL) {
+    return;
+  }
+
+  if (as->map_list != NULL) {
+    maps_destroy_list(as->map_list);
+    as->map_list = NULL;
+  }
+
+  free(as);
+#endif
 }

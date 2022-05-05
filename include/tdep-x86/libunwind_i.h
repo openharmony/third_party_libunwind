@@ -61,6 +61,7 @@ struct unw_addr_space
 #endif
     /* Add For Cache MAP And ELF */
     unw_cursor_t *cursor;
+    int pid;
    };
 
 static inline struct cursor *

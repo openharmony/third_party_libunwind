@@ -64,5 +64,6 @@ extern void *x86_r_uc_addr (ucontext_t *uc, int reg);
 extern void x86_sigreturn (unw_cursor_t *cursor);
 #define x86_handle_signal_frame UNW_OBJ(handle_signal_frame)
 extern int x86_handle_signal_frame(unw_cursor_t *cursor);
+#define init_local_addr_space           UNW_OBJ(init_local_addr_space)
 
 #endif /* unwind_i_h */
