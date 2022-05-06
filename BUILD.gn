@@ -410,6 +410,10 @@ if (defined(ohos_lite)) {
 } else {
   ohos_shared_library("libunwind") {
     deps = [ ":unwind_source" ]
+    install_images = [
+      "system",
+      "updater",
+    ]
     public_configs = [ ":unwind_config_public" ]
     part_name = "faultloggerd"
     subsystem_name = "hiviewdfx"
