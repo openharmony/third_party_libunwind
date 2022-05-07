@@ -40,6 +40,16 @@ extern struct map_info* unw_get_maps (unw_cursor_t *);
 extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 // Set unwind process id, for caching maps
 extern void unw_set_target_pid(unw_addr_space_t as, int pid);
+
+// Create caching maps for local uinwinding
+extern void unw_init_local_address_space(unw_addr_space_t* as);
+// Destory caching maps for local uinwinding
+extern void unw_destroy_local_address_space(unw_addr_space_t as);
+// Init cursor with other address space
+extern int unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t *uc);
+// Loop the symbol table to find matched symbol, only for local uinwinding
+extern int unw_get_symbol_info_by_pc(unw_addr_space_t as, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
+
 #ifdef __cplusplus
 }
 #endif
