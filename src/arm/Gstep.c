@@ -30,8 +30,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <signal.h>
 
-#define arm_exidx_step  UNW_OBJ(arm_exidx_step)
+#include "map_info.h"
 
+#define arm_exidx_step  UNW_OBJ(arm_exidx_step)
 static inline int
 arm_exidx_step (struct cursor *c)
 {
@@ -79,7 +80,6 @@ arm_exidx_step (struct cursor *c)
     }
 
   c->dwarf.pi_valid = 0;
-
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
 
@@ -92,8 +92,25 @@ unw_step (unw_cursor_t *cursor)
   Debug (1, "(cursor=%p)\n", c);
 
   /* Check if this is a signal frame. */
-  if (unw_is_signal_frame (cursor) > 0)
-     return arm_handle_signal_frame (cursor);
+  if (unw_is_signal_frame (cursor) > 0){
+      /* Add for using lr backtrace when pc is zero */
+      ret = arm_handle_signal_frame (cursor);
+      if ( c->dwarf.ip == 0x0 )
+      {
+          unw_word_t lr;
+          if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &lr) >= 0)
+          {
+              if (lr != c->dwarf.ip)
+              {
+                  Debug(1, "fix ip = 0 action \n");
+                  c->dwarf.ip = lr;
+                  return ret;
+              }
+          }
+      }
+      return ret;
+      /* Add for using lr backtrace when pc is zero */
+  }
 
 #ifdef CONFIG_DEBUG_FRAME
   /* First, try DWARF-based unwinding. */
@@ -125,7 +142,7 @@ unw_step (unw_cursor_t *cursor)
       if (ret > 0)
         return 1;
       if (ret == -UNW_ESTOPUNWIND || ret == 0)
-        return ret;
+        ret = -1; // try frame pointer
     }
 
   /* Fall back on APCS frame parsing.

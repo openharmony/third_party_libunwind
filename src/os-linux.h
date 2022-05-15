@@ -62,6 +62,25 @@ unw_ltoa (char *buf, long val)
   return buf + len;
 }
 
+// now return lines of the maps
+static inline int
+get_maps_count(int fd)
+{
+  if (fd < 0) {
+    return -1;
+  }
+
+  char buffer[1];
+  int count = 0;
+  while(read(fd, buffer, 1) > 0) {
+    if (buffer[0] == '\n') {
+      count++;
+    }
+  }
+  lseek(fd, 0, SEEK_SET);
+  return count;
+}
+
 static inline int
 maps_init (struct map_iterator *mi, pid_t pid)
 {
@@ -89,7 +108,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
         {
           mi->offset = 0;
           mi->buf = mi->buf_end = cp + mi->buf_size;
-          return 0;
+          return get_maps_count(mi->fd);
         }
     }
   return -1;

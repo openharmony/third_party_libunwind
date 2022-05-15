@@ -1,27 +1,14 @@
 {
     "name": "@ohos/libunwind",
-    "version": "",
-    "description": "Third-party open-source software libunwind | 三方开源软件libunwind",
-    "homePage": "https://gitee.com/openharmony",
+    "description": "a portable and efficient C programming interface (API) to determine the call-chain of a program.",
+    "version": "3.1",
     "license": "MIT",
-    "repository": "https://gitee.com/openharmony/third_party_libunwind",
-    "domain": "os",
-    "language": "",
     "publishAs": "code-segment",
-    "private": false,
-    "scripts": {},
-    "tags": [
-        "third_party"
-    ],
-    "keywords": [
-        "third-party",
-        "libunwind"
-    ],
-    "envs": {},
-    "dirs": {},
     "segment": {
         "destPath": "third_party/libunwind"
     },
+    "dirs": {},
+    "scripts": {},
     "component": {
         "name": "thirdparty_libunwind",
         "subsystem": "",
@@ -30,6 +17,10 @@
         "adapted_system_type": [],
         "rom": "",
         "ram": "",
+        "deps": {
+            "components": [],
+            "third_party": []
+        },
         "build": {
             "sub_component": [],
             "inner_kits": [],

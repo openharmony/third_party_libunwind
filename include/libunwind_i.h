@@ -61,7 +61,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #elif defined(HAVE_SYS_ELF_H)
 # include <sys/elf.h>
 #else
-# error Could not locate <elf.h>
+# include <elf.h>
 #endif
 #if defined(ELFCLASS32)
 # define UNW_ELFCLASS32 ELFCLASS32
@@ -278,8 +278,9 @@ do {                                                                    \
 # define Dprintf(/* format */ ...)                                      \
   fprintf (stderr, /* format */ __VA_ARGS__)
 #else
+# include <stdio.h>
 # define Debug(level, /* format */ ...)
-# define Dprintf( /* format */ ...)
+# define Dprintf(/* format */ ...)
 #endif
 
 static ALWAYS_INLINE int
@@ -295,15 +296,13 @@ extern unw_word_t _U_dyn_info_list_addr (void);
 
 /* This is needed/used by ELF targets only.  */
 
-struct elf_image
-  {
-    void *image;                /* pointer to mmap'd image */
-    size_t size;                /* (file-) size of the image */
-  };
-
 struct elf_dyn_info
   {
-    struct elf_image ei;
+    /* Add For Cache MAP And ELF*/
+    /* Removed: struct elf_image ei; */
+    /* Add For Cache MAP And ELF */
+    unw_word_t start_ip;
+    unw_word_t end_ip;
     unw_dyn_info_t di_cache;
     unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
 #if UNW_TARGET_IA64
@@ -314,10 +313,23 @@ struct elf_dyn_info
 #endif
   };
 
+struct elf_image
+  {
+    void *image;                /* pointer to mmap'd image */
+    size_t size;                /* (file-) size of the image */
+    int has_dyn_info;
+    struct elf_dyn_info elf_dyn_info;
+    int load_bias;
+    int load_offset;
+    char* strtab;
+  };
+
 static inline void invalidate_edi (struct elf_dyn_info *edi)
 {
-  if (edi->ei.image)
-    munmap (edi->ei.image, edi->ei.size);
+  /* Add For Cache MAP And ELF*/
+  /* Removed: if (edi->ei.image) */
+  /*            munmap (edi->ei.image, edi->ei.size); */
+  /* Add For Cache MAP And ELF */
   memset (edi, 0, sizeof (*edi));
   edi->di_cache.format = -1;
   edi->di_debug.format = -1;

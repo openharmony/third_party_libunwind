@@ -37,6 +37,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #include "elf64.h"
+/* Add For Cache MAP And ELF */
+#include "map_info.h"
+/* Add For Cache MAP And ELF */
 #include "mempool.h"
 #include "dwarf.h"
 
@@ -71,7 +74,22 @@ struct unw_addr_space
     unw_word_t dyn_info_list_addr;      /* (cached) dyn_info_list_addr */
     struct dwarf_rs_cache global_cache;
     struct unw_debug_frame_list *debug_frames;
+    /* Add For Cache MAP And ELF */
+    struct map_info *map_list;
+    /* Add For Cache MAP And ELF */
+    unw_cursor_t *cursor;
+    int pid;
    };
+
+static inline struct cursor *
+get_cursor_from_as(unw_addr_space_t as)
+{
+  if (as->cursor) {
+    return (struct cursor *)(as->cursor);
+  }
+
+  return NULL;
+}
 
 struct cursor
   {
@@ -234,7 +252,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
-#if __linux__
+#if __linux__ || defined(UNW_TARGET_X86_64_LINUX)
 # define tdep_fetch_frame               UNW_OBJ(fetch_frame)
 # define tdep_cache_frame               UNW_OBJ(cache_frame)
 # define tdep_reuse_frame               UNW_OBJ(reuse_frame)
@@ -274,15 +292,16 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                                      unw_dyn_info_t *di, unw_proc_info_t *pi,
                                      int need_unwind_info, void *arg);
 extern void *x86_64_r_uc_addr (ucontext_t *uc, int reg);
-extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-                               unsigned long *segbase, unsigned long *mapoff,
-                               char *path, size_t pathlen);
+/* Add For Cache MAP And ELF */
+extern struct map_info *tdep_get_elf_image (unw_addr_space_t as, pid_t pid,
+					    unw_word_t ip);
+/* Add For Cache MAP And ELF */
 extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
                               unw_fpreg_t *valp, int write);
-#if __linux__
+#if __linux__ || defined(UNW_TARGET_X86_64_LINUX)
 extern void tdep_fetch_frame (struct dwarf_cursor *c, unw_word_t ip,
                               int need_unwind_info);
 extern int tdep_cache_frame (struct dwarf_cursor *c);

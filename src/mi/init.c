@@ -24,6 +24,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
+#include "ohos-config.h"
+
 
 HIDDEN intrmask_t unwi_full_mask;
 
@@ -49,11 +51,13 @@ mi_init (void)
   if (str)
     unwi_debug_level = atoi (str);
 
+  unwi_debug_level = config_unwi_debug_level();
+
   if (unwi_debug_level > 0)
-    {
-      setbuf (stdout, NULL);
-      setbuf (stderr, NULL);
-    }
+  {
+    setbuf (stdout, NULL);
+    setbuf (stderr, NULL);
+  }
 #endif
 
   assert (sizeof (struct cursor) <= sizeof (unw_cursor_t));

@@ -24,6 +24,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifndef ELFXX_H
+#define ELFXX_H
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -53,6 +55,15 @@ extern int elf_w (get_proc_name_in_image) (unw_addr_space_t as,
                                            unsigned long mapoff,
                                            unw_word_t ip,
                                            char *buf, size_t buf_len, unw_word_t *offp);
+
+extern int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
+                                             unsigned long segbase,
+                                             unsigned long mapoff,
+                                             uint64_t pc,
+                                             int buf_sz,
+                                             char *buf,
+                                             uint64_t *sym_start,
+                                             uint64_t *sym_end);
 
 extern Elf_W (Shdr)* elf_w (find_section) (struct elf_image *ei, const char* secname);
 extern int elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local);
@@ -99,3 +110,5 @@ elf_map_image (struct elf_image *ei, const char *path)
 
   return 0;
 }
+
+#endif

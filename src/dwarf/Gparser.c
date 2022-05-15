@@ -334,6 +334,24 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
                  (long) (val * dci->data_align));
           break;
 
+        case DW_CFA_val_offset:
+          if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+              || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
+            break;
+          set_reg (sr, regnum, DWARF_WHERE_VAL, val * dci->data_align);
+          Debug (15, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
+                 (long) regnum, (long) (val * dci->data_align));
+          break;
+
+        case DW_CFA_val_offset_sf:
+          if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+              || ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0))
+            break;
+          set_reg (sr, regnum, DWARF_WHERE_VAL, val * dci->data_align);
+          Debug (15, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
+                 (long) regnum, (long) (val * dci->data_align));
+          break;
+
         case DW_CFA_def_cfa_expression:
           /* Save the address of the DW_FORM_block for later evaluation. */
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_EXPR, *addr);
@@ -867,6 +885,12 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
           if ((ret = eval_location_expr (c, cfa, as, a, addr, new_loc + i, arg)) < 0)
             return ret;
           new_loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (new_loc[i]));
+          break;
+
+        case DWARF_WHERE_VAL:
+          new_loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (new_loc[i]));
+          Debug (16, "%s(%d), where[%d]=0x%x, new_loc.val=0x%x\n",
+                 __FILE__, __LINE__, i, rs->reg.where[i], new_loc[i].val);
           break;
         }
     }
