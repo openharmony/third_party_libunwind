@@ -42,6 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define aarch64_lock                    UNW_OBJ(lock)
 #define aarch64_local_resume            UNW_OBJ(local_resume)
 #define aarch64_local_addr_space_init   UNW_OBJ(local_addr_space_init)
+#define init_local_addr_space           UNW_OBJ(init_local_addr_space)
 
 extern void aarch64_local_addr_space_init (void);
 extern int aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,

@@ -5,7 +5,22 @@
 /* #undef CONFIG_BLOCK_SIGNALS */
 
 /* Enable Debug Frame */
+#ifndef UNW_REMOTE_ONLY
+/*
+from configure.ac
+
+if remote build then enable_debug_frame will be no
+
+if test x$remote_only == xyes; then
+  enable_debug_frame=no
+fi
+if test x$enable_debug_frame = xyes; then
+  AC_DEFINE([CONFIG_DEBUG_FRAME], [], [Enable Debug Frame])
+fi
+
+*/
 #define CONFIG_DEBUG_FRAME 1
+#endif
 
 /* Support for Microsoft ABI extensions */
 /* #undef CONFIG_MSABI_SUPPORT */

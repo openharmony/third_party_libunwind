@@ -32,6 +32,10 @@ unw_destroy_addr_space (unw_addr_space_t as)
 # if UNW_DEBUG
   memset (as, 0, sizeof (*as));
 # endif
+  /* Add For Cache MAP And ELF */
+  if (as->map_list)
+    maps_destroy_list(as->map_list);
+  /* Add For Cache MAP And ELF */
   free (as);
 #endif
 }

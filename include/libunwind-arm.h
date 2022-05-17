@@ -255,7 +255,7 @@ arm_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
-    UNW_EMPTY_STRUCT
+    uint8_t placeholder;
   }
 unw_tdep_save_loc_t;
 
@@ -311,7 +311,7 @@ unw_tdep_context_t;
 typedef struct
   {
     /* no arm-specific auxiliary proc-info */
-    UNW_EMPTY_STRUCT
+    uint8_t placeholder;
   }
 unw_tdep_proc_info_t;
 

@@ -361,6 +361,10 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
           extbl_data += 8;
         }
       assert (n_table_words <= 5);
+      if(n_table_words > 5) {
+        Debug (2, "n_table_words is %d will be crash the stack\n",n_table_words);
+        return -UNW_EINVAL;
+      }
       unsigned j;
       for (j = 0; j < n_table_words; j++)
         {
