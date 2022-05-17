@@ -111,9 +111,18 @@ config("unwind_config_public") {
 
   if (defined(ohos_lite)) {
     cflags += [ "-fPIC" ]
+
+    # only support arm in ohos_lite
+    include_dirs += [ "include/tdep-arm" ]
+    cflags += [
+      "-Wno-inline-asm",
+      "-Wno-shift-count-overflow",
+      "-Wno-tautological-constant-out-of-range-compare",
+      "-Wno-unused-function",
+    ]
   }
 
-  if (true) {
+  if (target_cpu == "arm") {
     include_dirs += [ "include/tdep-arm" ]
     cflags += [
       "-Wno-inline-asm",
