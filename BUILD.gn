@@ -11,7 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/ohos.gni")
+if (defined(ohos_lite)) {
+  import("//build/lite/config/component/lite_component.gni")
+} else {
+  import("//build/ohos.gni")
+}
+
 common_source = [
   "src/dwarf/Gexpr.c",
   "src/dwarf/Gfde.c",
@@ -279,10 +284,12 @@ config("unwind_config_public") {
     include_dirs += [ "include/tdep-x86_64" ]
   }
 }
+
 config("unwind_config_remote") {
   cflags =
       [ "-Wno-format" ]  # some debug feature will warning in host x64 build
 }
+
 config("unwind_config_remote_public") {
   cflags = []
   include_dirs = []
@@ -327,87 +334,162 @@ config("unwind_config_x64") {
   defines += [ "UNW_TARGET_X86_64_LINUX" ]
 }
 
-ohos_source_set("unwind_source_arm") {
-  configs = [ ":unwind_config_remote" ]
-  public_configs = [
-    ":unwind_config_public",
-    ":unwind_config_remote_public",
-    ":unwind_config_arm",
-  ]
-  sources = common_source
+if (defined(ohos_lite)) {
+  source_set("unwind_source_arm") {
+    configs += [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm",
+    ]
+    sources = common_source
 
-  # there is a main function in this file
-  # for a lib we dont need this
-  arm_source -= [ "src/arm/gen-offsets.c" ]
+    # there is a main function in this file
+    # for a lib we dont need this
+    arm_source -= [ "src/arm/gen-offsets.c" ]
 
-  # no jump lib
-  arm_source -= [
-    "src/arm/getcontext.S",
-    "src/arm/siglongjmp.S",
-  ]
-  sources += arm_source
-  sources -= remove_sources
-}
-
-ohos_source_set("unwind_source_arm64") {
-  configs = [ ":unwind_config_remote" ]
-  public_configs = [
-    ":unwind_config_public",
-    ":unwind_config_remote_public",
-    ":unwind_config_arm64",
-  ]
-  sources = common_source
-
-  arm64_source -= [ "src/aarch64/getcontext.S" ]
-
-  sources += arm64_source
-  sources -= remove_sources
-}
-
-ohos_source_set("unwind_source_x64") {
-  configs = [ ":unwind_config_remote" ]
-  public_configs = [
-    ":unwind_config_public",
-    ":unwind_config_remote_public",
-    ":unwind_config_x64",
-  ]
-  sources = common_source
-
-  # no jump lib
-  x64_source -= [
-    "src/x86_64/getcontext.S",
-    "src/x86_64/setcontext.S",
-  ]
-  sources += x64_source
-  sources -= remove_sources
-}
-
-ohos_source_set("unwind_source") {
-  configs = [ ":unwind_config_public" ]
-  sources = common_source
-
-  if (target_cpu == "arm") {
-    # as libc++ is static linked with libunwind.a
-    # we remove the Gstep.c for duplicated symbol violation
+    # no jump lib
+    arm_source -= [
+      "src/arm/getcontext.S",
+      "src/arm/siglongjmp.S",
+    ]
     sources += arm_source
-    public_configs = [ ":unwind_config_arm" ]
-  } else if (target_cpu == "arm64") {
-    sources += arm64_source
-    public_configs = [ ":unwind_config_arm64" ]
-  } else if (target_cpu == "x64") {
-    sources += x64_source
-    public_configs = [ ":unwind_config_x64" ]
+    sources -= remove_sources
   }
 
-  sources += [ "src/os-ohos.c" ]
-}
+  source_set("unwind_source_arm64") {
+    configs += [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm64",
+    ]
+    sources = common_source
 
-if (defined(ohos_lite)) {
+    arm64_source -= [ "src/aarch64/getcontext.S" ]
+
+    sources += arm64_source
+    sources -= remove_sources
+  }
+
+  source_set("unwind_source_x64") {
+    configs += [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_x64",
+    ]
+    sources = common_source
+
+    # no jump lib
+    x64_source -= [
+      "src/x86_64/getcontext.S",
+      "src/x86_64/setcontext.S",
+    ]
+    sources += x64_source
+    sources -= remove_sources
+  }
+
+  source_set("unwind_source") {
+    configs += [ ":unwind_config_public" ]
+    sources = common_source
+
+    if (target_cpu == "arm") {
+      # as libc++ is static linked with libunwind.a
+      # we remove the Gstep.c for duplicated symbol violation
+      sources += arm_source
+      public_configs = [ ":unwind_config_arm" ]
+    } else if (target_cpu == "arm64") {
+      sources += arm64_source
+      public_configs = [ ":unwind_config_arm64" ]
+    } else if (target_cpu == "x64") {
+      sources += x64_source
+      public_configs = [ ":unwind_config_x64" ]
+    }
+
+    sources += [ "src/os-ohos.c" ]
+  }
+
   shared_library("libunwind") {
     deps = [ ":unwind_source" ]
     public_configs = [ ":unwind_config_public" ]
   }
 } else {
+  ohos_source_set("unwind_source_arm") {
+    configs = [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm",
+    ]
+    sources = common_source
+
+    # there is a main function in this file
+    # for a lib we dont need this
+    arm_source -= [ "src/arm/gen-offsets.c" ]
+
+    # no jump lib
+    arm_source -= [
+      "src/arm/getcontext.S",
+      "src/arm/siglongjmp.S",
+    ]
+    sources += arm_source
+    sources -= remove_sources
+  }
+
+  ohos_source_set("unwind_source_arm64") {
+    configs = [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm64",
+    ]
+    sources = common_source
+
+    arm64_source -= [ "src/aarch64/getcontext.S" ]
+
+    sources += arm64_source
+    sources -= remove_sources
+  }
+
+  ohos_source_set("unwind_source_x64") {
+    configs = [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_x64",
+    ]
+    sources = common_source
+
+    # no jump lib
+    x64_source -= [
+      "src/x86_64/getcontext.S",
+      "src/x86_64/setcontext.S",
+    ]
+    sources += x64_source
+    sources -= remove_sources
+  }
+
+  ohos_source_set("unwind_source") {
+    configs = [ ":unwind_config_public" ]
+    sources = common_source
+
+    if (target_cpu == "arm") {
+      # as libc++ is static linked with libunwind.a
+      # we remove the Gstep.c for duplicated symbol violation
+      sources += arm_source
+      public_configs = [ ":unwind_config_arm" ]
+    } else if (target_cpu == "arm64") {
+      sources += arm64_source
+      public_configs = [ ":unwind_config_arm64" ]
+    } else if (target_cpu == "x64") {
+      sources += x64_source
+      public_configs = [ ":unwind_config_x64" ]
+    }
+
+    sources += [ "src/os-ohos.c" ]
+  }
+
   ohos_shared_library("libunwind") {
     deps = [ ":unwind_source" ]
     install_images = [
