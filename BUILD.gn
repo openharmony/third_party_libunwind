@@ -395,6 +395,15 @@ if (defined(ohos_lite)) {
     sources = common_source
 
     if (target_cpu == "arm") {
+      # there is a main function in this file
+      # for a lib we dont need this
+      arm_source -= [ "src/arm/gen-offsets.c" ]
+
+      # no jump lib
+      arm_source -= [
+        "src/arm/getcontext.S",
+        "src/arm/siglongjmp.S",
+      ]
       # as libc++ is static linked with libunwind.a
       # we remove the Gstep.c for duplicated symbol violation
       sources += arm_source
