@@ -259,6 +259,7 @@ config("unwind_config_public") {
     "-Wno-unused-parameter",
     "-Wno-unused-variable",
     "-Wno-void-pointer-to-int-cast",
+    "-Wno-pointer-to-int-cast",
   ]
 
   if (defined(ohos_lite)) {
