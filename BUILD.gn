@@ -404,6 +404,7 @@ if (defined(ohos_lite)) {
         "src/arm/getcontext.S",
         "src/arm/siglongjmp.S",
       ]
+
       # as libc++ is static linked with libunwind.a
       # we remove the Gstep.c for duplicated symbol violation
       sources += arm_source
