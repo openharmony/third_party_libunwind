@@ -46,7 +46,7 @@ struct map_info;
   #elif defined(HAVE_SYS_LINK_H)
     #include <sys/link.h>
   #else
-    #include <link.h>
+    #error Could not find <link.h>
   #endif
   #if defined(__ANDROID__) && defined(__arm__) && __ANDROID_API__ < 21
     int dl_iterate_phdr(int (*)(struct dl_phdr_info *, size_t, void *), void *);
