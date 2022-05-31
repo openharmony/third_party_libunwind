@@ -229,11 +229,8 @@ if (defined(ohos_lite)) {
       "src/arm/Lstash_frame.c",
       "src/arm/Lstep.c",
       "src/arm/Ltrace.c",
-      "src/arm/gen-offsets.c",
-      "src/arm/getcontext.S",
       "src/arm/is_fpreg.c",
       "src/arm/regname.c",
-      "src/arm/siglongjmp.S",
       "src/elf32.c",
     ]
     public_configs += [ ":unwind_config_arm" ]

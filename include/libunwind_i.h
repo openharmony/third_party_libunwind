@@ -61,7 +61,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #elif defined(HAVE_SYS_ELF_H)
 # include <sys/elf.h>
 #else
-# include <elf.h>
+# error Could not locate <elf.h>
 #endif
 #if defined(ELFCLASS32)
 # define UNW_ELFCLASS32 ELFCLASS32
