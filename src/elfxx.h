@@ -87,8 +87,17 @@ elf_map_image (struct elf_image *ei, const char *path)
   int fd;
 
   fd = open (path, O_RDONLY);
-  if (fd < 0)
-    return -1;
+  if (fd < 0) {
+    if (strstr(path, "/system") != path) {
+      return -1;
+    }
+
+    char *retry_path = (char*)path + strlen("/system");
+    fd = open (retry_path, O_RDONLY);
+    if (fd < 0) {
+      return -1;
+    }
+  }
 
   if (fstat (fd, &stat) < 0)
     {
