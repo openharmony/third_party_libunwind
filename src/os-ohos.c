@@ -139,7 +139,7 @@ unw_init_local_address_space(unw_addr_space_t* as)
 }
 
 void
- unw_destroy_local_address_space(unw_addr_space_t as)
+unw_destroy_local_address_space(unw_addr_space_t as)
 {
 #ifdef UNW_REMOTE_ONLY
   return;
@@ -155,4 +155,24 @@ void
 
   free(as);
 #endif
+}
+
+void
+uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  int min_sz = reg_sz < DWARF_NUM_PRESERVED_REGS ? reg_sz : DWARF_NUM_PRESERVED_REGS;
+  c->dwarf.reg_sz = min_sz;
+  for (int i = 0; i < min_sz; i++) {
+    c->dwarf.ctx[i] = regs[i];
+  }
+
+#if defined(__arm__)
+  c->dwarf.ip = regs[UNW_ARM_R15];
+  c->dwarf.cfa = regs[UNW_REG_SP];
+#elif defined(__aarch64__)
+  c->dwarf.ip = regs[UNW_AARCH64_PC];
+  c->dwarf.cfa = regs[UNW_REG_SP];
+#endif
+  return;
 }

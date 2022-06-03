@@ -337,6 +337,10 @@ typedef struct dwarf_cursor
     unw_word_t rel_pc; /* pc related to the beginning of the elf, used for addr2line */
     unw_word_t cached_ip;              /* cached instruction pointer */
     struct map_info *cached_map; /* memory mapping info associated with cached ip */
+    // allow us set unwind context
+    int index;
+    int reg_sz;
+    unw_word_t ctx[DWARF_NUM_PRESERVED_REGS];
   }
 dwarf_cursor_t;
 

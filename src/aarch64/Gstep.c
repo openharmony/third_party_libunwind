@@ -135,10 +135,10 @@ step_by_frame_pointer (struct cursor *c)
 {
   dwarf_loc_t ip_loc, fp_loc;
   unw_word_t frame;
-  if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &frame) < 0)
-    {
+  if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &frame) < 0) {
       return 0;
-    }
+  }
+
   ip_loc = DWARF_LOC(frame + 8, 0);
   fp_loc = DWARF_LOC(frame, 0);
   if (dwarf_get(&c->dwarf, ip_loc, &c->dwarf.ip) < 0)
@@ -155,7 +155,7 @@ unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int validate = c->validate;
-  int ret;
+  int ret, saved_ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx))\n",
          c, c->dwarf.ip, c->dwarf.cfa);
@@ -166,26 +166,27 @@ unw_step (unw_cursor_t *cursor)
   /* Check if this is a signal frame. */
   ret = unw_is_signal_frame (cursor);
   if (ret > 0)
-    return aarch64_handle_signal_frame (cursor);
-  else if (unlikely (ret < 0))
     {
-      /* IP points to non-mapped memory. */
-      /* This is probably SIGBUS. */
-      /* Try to load LR in IP to recover. */
-      Debug(1, "Invalid address found in the call stack: 0x%lx\n", c->dwarf.ip);
-      dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
+      ret = aarch64_handle_signal_frame (cursor);
     }
 
   /* Restore default memory validation state */
   c->validate = validate;
 
   ret = dwarf_step (&c->dwarf);
-  Debug(1, "dwarf_step()=%d\n", ret);
+  saved_ret = ret;
 
-  if (unlikely (ret == -UNW_ESTOPUNWIND))
-    return ret;
+  if (ret < 0 && c->dwarf.index == 0)
+    {
+      /* IP points to non-mapped memory. */
+      /* This is probably SIGBUS. */
+      /* Try to load LR in IP to recover. */
+      Debug(1, "Invalid address found in the call stack: 0x%lx\n", c->dwarf.ip);
+      dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
+      ret = 1;
+    }
 
-  if (unlikely (ret < 0))
+  if (unlikely (ret < 0) && (c->dwarf.index < 2))
     {
       /* DWARF failed. */
       if (is_plt_entry (&c->dwarf))
@@ -221,6 +222,10 @@ unw_step (unw_cursor_t *cursor)
           ret = step_by_frame_pointer(c);
         }
     }
+
+  c->dwarf.index++;
+  if (unlikely (saved_ret == -UNW_ESTOPUNWIND))
+    return 0;
 
   if (ret > 0)
     return ret;

@@ -24,6 +24,8 @@ extern "C" {
 #include "libunwind_i.h"
 #include "map_info.h"
 
+// set unwind context without modifing target memory
+extern void uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
 // Unwind using specific method
 // target dependent
 extern int uwn_step(unw_cursor_t *, int method);
