@@ -59,7 +59,7 @@ extern "C" {
    cursor) + padding
 */
 
-#define UNW_TDEP_CURSOR_LEN     250
+#define UNW_TDEP_CURSOR_LEN     1024
 
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
