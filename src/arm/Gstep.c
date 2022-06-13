@@ -140,7 +140,7 @@ unw_step (unw_cursor_t *cursor)
 #ifdef __FreeBSD__
   if (0)
 #else
-  if (unlikely (ret < 0) && (c->dwarf.index < 2))
+  if (unlikely (ret < 0) && (c->dwarf.index < 3))
 #endif
     {
       if (UNW_TRY_METHOD(UNW_ARM_METHOD_FRAME))
