@@ -336,6 +336,11 @@ config("unwind_config_x64") {
   defines += [ "UNW_TARGET_X86_64_LINUX" ]
 }
 
+config("unwind_config_x86_64") {
+  defines = [ "UNW_TARGET_X86_64" ]
+  defines += [ "UNW_TARGET_X86_64_LINUX" ]
+}
+
 if (defined(ohos_lite)) {
   source_set("unwind_source_arm") {
     configs += [ ":unwind_config_remote" ]
@@ -417,6 +422,9 @@ if (defined(ohos_lite)) {
     } else if (target_cpu == "x64") {
       sources += x64_source
       public_configs = [ ":unwind_config_x64" ]
+    } else if (target_cpu == "x86_64") {
+      sources += x64_source
+      public_configs = [ ":unwind_config_x86_64" ]
     }
 
     sources += [ "src/os-ohos.c" ]
@@ -470,6 +478,24 @@ if (defined(ohos_lite)) {
       ":unwind_config_public",
       ":unwind_config_remote_public",
       ":unwind_config_x64",
+    ]
+    sources = common_source
+
+    # no jump lib
+    x64_source -= [
+      "src/x86_64/getcontext.S",
+      "src/x86_64/setcontext.S",
+    ]
+    sources += x64_source
+    sources -= remove_sources
+  }
+
+  ohos_source_set("unwind_source_x86_64") {
+    configs = [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_x86_64",
     ]
     sources = common_source
 
