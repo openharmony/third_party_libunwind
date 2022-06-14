@@ -282,7 +282,7 @@ config("unwind_config_public") {
   } else if (target_cpu == "arm64") {
     include_dirs += [ "include/tdep-aarch64" ]
     cflags += [ "-Wno-incompatible-pointer-types" ]
-  } else if (target_cpu == "x64") {
+  } else if (target_cpu == "x64" || target_cpu == "x86_64") {
     include_dirs += [ "include/tdep-x86_64" ]
   }
 }
@@ -523,6 +523,9 @@ if (defined(ohos_lite)) {
     } else if (target_cpu == "x64") {
       sources += x64_source
       public_configs = [ ":unwind_config_x64" ]
+    } else if (target_cpu == "x86_64") {
+      sources += x64_source
+      public_configs = [ ":unwind_config_x86_64" ]
     }
 
     sources += [ "src/os-ohos.c" ]
