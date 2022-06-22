@@ -280,7 +280,8 @@ do {                                                                    \
 #else
 # include <stdio.h>
 # define Debug(level, /* format */ ...)
-# define Dprintf(/* format */ ...)
+# define Dprintf(/* format */ ...)                                      \
+  fprintf (stderr, /* format */ __VA_ARGS__)
 #endif
 
 static ALWAYS_INLINE int

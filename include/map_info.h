@@ -37,6 +37,7 @@ struct map_info
     struct map_info *next;
     int sz;
     void* buf;
+    int buf_sz;
   };
 
 int maps_is_readable(struct map_info *map_list, unw_word_t addr);

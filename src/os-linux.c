@@ -49,15 +49,17 @@ maps_create_list(pid_t pid)
     return NULL;
   }
 
-  buf = (struct map_info*)mmap(NULL, sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+  int buf_sz = sz + 256;
+  buf = (struct map_info*)mmap(NULL, buf_sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (buf == NULL) {
     return NULL;
   }
 
   while (maps_next (&mi, &start, &end, &offset, &flags))
     {
-      if (index >= sz) {
-        break;
+      if (index >= buf_sz) {
+        Dprintf("Lost Map:%p-%p %s\n", (void*)start, (void*)end, mi.path);
+        continue;
       }
 
       cur_map = &buf[index];
@@ -74,12 +76,13 @@ maps_create_list(pid_t pid)
       cur_map->ei.strtab = NULL;
       cur_map->sz = sz;
       cur_map->buf = buf;
+      cur_map->buf_sz = buf_sz;
       map_list = cur_map;
       index = index + 1;
     }
-
+  map_list->sz = index;
   maps_close (&mi);
-
+  Dprintf("Finish create map list, sz:%d, index%d.\n", sz, index);
   return map_list;
 }
 
@@ -87,7 +90,7 @@ void
 maps_destroy_list(struct map_info *map_info)
 {
   struct map_info *map;
-  int sz  = map_info->sz;
+  int buf_sz  = map_info->buf_sz;
   void* buf = map_info->buf;
   while (map_info)
     {
@@ -104,7 +107,7 @@ maps_destroy_list(struct map_info *map_info)
       map = NULL;
     }
   if (buf != NULL) {
-    munmap(buf, sz * sizeof(struct map_info));
+    munmap(buf, buf_sz * sizeof(struct map_info));
     buf = NULL;
   }
 }
@@ -137,6 +140,8 @@ get_map(struct map_info *map_list, unw_word_t addr)
   if ((addr >= buf[begin].start) && (addr <= buf[begin].end)) {
     return &buf[begin];
   }
+
+  Dprintf("Could not find map for addr:%p\n", (void*)addr);
   return NULL;
 }
 
@@ -186,6 +191,7 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
       if (ret < 0)
         {
           map->ei.image = NULL;
+          Dprintf("Failed to elf_map_image for ip:%p\n", (void*)ip);
           return NULL;
         }
     }
