@@ -83,7 +83,7 @@ maps_create_list(pid_t pid)
   if (map_list != NULL) {
       map_list->sz = index;
   } else {
-    munmap(buf, buf_sz*sizeof(struct map_info));
+      munmap(buf, buf_sz*sizeof(struct map_info));
   }
   maps_close (&mi);
   Dprintf("Finish create map list, sz:%d, index%d.\n", sz, index);
