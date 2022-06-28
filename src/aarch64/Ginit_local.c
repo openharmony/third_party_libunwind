@@ -51,6 +51,7 @@ unw_init_local_common (unw_cursor_t *cursor, unw_context_t *uc, unsigned use_pre
   c->dwarf.as->pid = getpid();
   c->dwarf.cached_map = NULL;
   c->dwarf.rel_pc = 0;
+  c->dwarf.reg_sz = 0;
   c->uc = uc;
   c->validate = 0;
 
