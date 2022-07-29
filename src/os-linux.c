@@ -116,7 +116,7 @@ maps_destroy_list(struct map_info *map_info)
   }
 }
 
-static struct map_info *
+struct map_info *
 get_map(struct map_info *map_list, unw_word_t addr)
 {
   if (map_list == NULL) {

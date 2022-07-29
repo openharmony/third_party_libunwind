@@ -24,6 +24,7 @@
 
 extern unw_word_t get_previous_instr_sz(unw_cursor_t *cursor);
 extern void unw_init_local_addr_space (unw_addr_space_t as);
+extern struct map_info *get_map(struct map_info *map_list, unw_word_t addr);
 
 void 
 unw_set_target_pid(unw_addr_space_t as, int pid)
@@ -72,7 +73,7 @@ struct map_info*
 unw_get_map (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  return tdep_get_elf_image(c->dwarf.as, c->dwarf.as->pid, c->dwarf.ip);
+  return get_map(c->dwarf.as->map_list, c->dwarf.ip);
 }
 
 struct map_info*
