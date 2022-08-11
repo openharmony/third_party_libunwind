@@ -15,7 +15,10 @@
 
 #include "os-ohos.h"
 
+#include <dlfcn.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <stdbool.h>
 
 #include "elfxx.h"
 #include "libunwind_i.h"
@@ -159,7 +162,7 @@ unw_destroy_local_address_space(unw_addr_space_t as)
 }
 
 void
-uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
+unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
 {
   struct cursor *c = (struct cursor *) cursor;
   int min_sz = reg_sz < DWARF_NUM_PRESERVED_REGS ? reg_sz : DWARF_NUM_PRESERVED_REGS;
@@ -177,3 +180,73 @@ uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
 #endif
   return;
 }
+
+bool
+unw_is_ark_managed_frame(struct cursor* c)
+{
+  if (c->dwarf.cached_map != NULL) {
+    Dprintf("cached map with elf image, not ark frame.\n");
+    return false;
+  }
+
+  struct map_info* map = get_map(c->dwarf.as->map_list, c->dwarf.ip);
+  if (map == NULL) {
+    Dprintf("Not mapped ip.\n");
+    return false;
+  }
+
+  if ((strstr(map->path, "[anon:ArkJS Heap]") == NULL) &&
+      (strstr(map->path, "/dev/zero") == NULL)) {
+    Dprintf("Not ark map:%s.\n", map->path);
+    return false;
+  }
+
+  if ((map->flags & PROT_EXEC) == 0) {
+    Dprintf("Target map is not executable.\n");
+    return false;
+  }
+
+  return true;
+}
+
+#define ARK_LIB_NAME "libark_jsruntime.so"
+int (*step_ark_managed_native_frame_fn)(int, uintptr_t*, uintptr_t*, uintptr_t*, char*, size_t);
+void* handle = NULL; // this handle will never be unloaded
+bool has_try_load_ark_lib = false;
+pthread_mutex_t lock;
+
+int
+unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr_t* sp, char* buf, size_t buf_sz)
+{
+  if (step_ark_managed_native_frame_fn != NULL) {
+    return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
+  }
+
+  pthread_mutex_lock(&lock);
+  if (step_ark_managed_native_frame_fn != NULL) {
+    return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
+  }
+
+  if (has_try_load_ark_lib) {
+    Dprintf("Failed to load ark library.\n");
+    return -1;
+  }
+
+  has_try_load_ark_lib = true;
+  handle = dlopen(ARK_LIB_NAME, RTLD_LAZY);
+  if (handle == NULL) {
+    Dprintf("Failed to load library(%s).\n", dlerror());
+    return -1;
+  }
+
+  *(void**)(&step_ark_managed_native_frame_fn) = dlsym(handle, "step_ark_managed_native_frame");
+  if (!step_ark_managed_native_frame_fn) {
+    Dprintf("Failed to find symbol(%s).\n", dlerror());
+    dlclose(handle);
+    handle = NULL;
+    return -1;
+  }
+
+  return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
+}
+

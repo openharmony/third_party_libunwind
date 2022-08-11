@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 #include "offsets.h"
-
+#include "os-ohos.h"
 /* Recognise PLT entries such as:
   40ddf0:       b0000570        adrp    x16, 4ba000 <_GLOBAL_OFFSET_TABLE_+0x2a8>
   40ddf4:       f9433611        ldr     x17, [x16,#1640]
@@ -126,6 +126,7 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
   /* Set SP/CFA and PC/IP.  */
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa);
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
+  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.fp);
 
   c->dwarf.pi_valid = 0;
   c->dwarf.use_prev_instr = 0;
@@ -178,7 +179,16 @@ unw_step (unw_cursor_t *cursor)
 
   ret = dwarf_step (&c->dwarf);
   saved_ret = ret;
-
+#ifdef HAS_ARK_FRAME
+  if (ret < 0 && unw_is_ark_managed_frame(c)) {
+    dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.fp);
+    char buf[128] = {0};
+    ret = unw_step_ark_managed_native_frame(c->dwarf.as->pid,
+        (uintptr_t*)&(c->dwarf.ip), (uintptr_t*)&(c->dwarf.fp), (uintptr_t*)&(c->dwarf.cfa), buf, 128);
+    c->dwarf.loc[UNW_AARCH64_X29] = DWARF_LOC(c->dwarf.fp, 0);
+    c->dwarf.loc[UNW_AARCH64_PC] = DWARF_LOC(c->dwarf.fp + 8, 0);
+  }
+#endif
   if (ret < 0 && c->dwarf.index == 0)
     {
       /* IP points to non-mapped memory. */

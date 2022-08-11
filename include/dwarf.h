@@ -341,6 +341,7 @@ typedef struct dwarf_cursor
     int index;
     int reg_sz;
     unw_word_t ctx[DWARF_NUM_PRESERVED_REGS];
+    unw_word_t fp;     /* frame-pointer */
   }
 dwarf_cursor_t;
 

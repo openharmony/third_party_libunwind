@@ -17,6 +17,8 @@
 #define OS_OHOS_H
 
 #include <inttypes.h>
+#include <stdbool.h>
+
 #include "libunwind_i.h"
 
 struct map_info;
@@ -31,6 +33,8 @@ extern int unw_get_symbol_info_by_pc(unw_addr_space_t as, uint64_t pc, int buf_s
 extern void unw_set_target_pid(unw_addr_space_t as, int pid);
 extern void unw_init_local_address_space(unw_addr_space_t* as);
 extern void unw_destroy_local_address_space(unw_addr_space_t as);
-extern void uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
+extern void unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
+extern int unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr_t* sp, char* buf, size_t buf_sz);
+extern bool unw_is_ark_managed_frame(struct cursor* c);
 
 #endif

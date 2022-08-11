@@ -25,10 +25,7 @@ extern "C" {
 #include "map_info.h"
 
 // set unwind context without modifing target memory
-extern void uwn_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
-// Unwind using specific method
-// target dependent
-extern int uwn_step(unw_cursor_t *, int method);
+extern void unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
 // Get relative pc from cursor or calculate it
 extern unw_word_t unw_get_rel_pc (unw_cursor_t *);
 // We may want to get previous executed address, thus previous instruction size is needed
