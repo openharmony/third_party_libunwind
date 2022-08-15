@@ -529,6 +529,7 @@ if (defined(ohos_lite)) {
     }
 
     sources += [ "src/os-ohos.c" ]
+    cflags = [ "-DHAS_ARK_FRAME" ]
   }
 
   ohos_shared_library("libunwind") {
