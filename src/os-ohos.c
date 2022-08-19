@@ -242,7 +242,6 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
   *(void**)(&step_ark_managed_native_frame_fn) = dlsym(handle, "step_ark_managed_native_frame");
   if (!step_ark_managed_native_frame_fn) {
     Dprintf("Failed to find symbol(%s).\n", dlerror());
-    dlclose(handle);
     handle = NULL;
     return -1;
   }
