@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <sys/mman.h>
 
@@ -37,12 +38,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
 #endif
-/* Add For Cache MAP And ELF */
+
+#ifndef NT_GNU_BUILD_ID
+#define NT_GNU_BUILD_ID 3
+#endif
+
+#ifndef ElfW
+#define ElfW(type) Elf_##type
+#endif
+
+#define ALIGN(val, align) (((val) + (align) - 1) & ~((align) - 1))
+
 int
 dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 			 unw_addr_space_t as, char *path,
 			 unw_word_t segbase, unw_word_t mapoff, unw_word_t ip)
-/* Add For Cache MAP And ELF */
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
@@ -61,10 +71,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   int i, ret, found = 0;
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
-
-  /* Add For Cache MAP And ELF */
   if (!elf_w(valid_object) (ei))
-  /* Add For Cache MAP And ELF */
     return -UNW_ENOINFO;
   
   if (ei->has_dyn_info == 1 &&
@@ -73,12 +80,14 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
     *edi = ei->elf_dyn_info;
     return 1; // found
   }
-  /* Add For Cache MAP And ELF */
+
   ehdr = ei->image;
   phdr = (Elf_W(Phdr) *) ((char *) ei->image + ehdr->e_phoff);
-  /* Add For Cache MAP And ELF */
-
-
+#ifdef PARSE_BUILD_ID
+  struct build_id_note* note;
+  int note_len;
+  size_t note_offset;
+#endif
   unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
@@ -134,7 +143,33 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
           parm_exidx = phdr + i;
           break;
 #endif
+#ifdef PARSE_BUILD_ID
+        case PT_NOTE: {
+            note = (void *)(ei->image + phdr[i].p_offset);
+            note_len = phdr[i].p_filesz;
+            while (note_len >= (int)(sizeof(struct build_id_note))) {
+                if (note->nhdr.n_type == NT_GNU_BUILD_ID &&
+                  note->nhdr.n_descsz != 0 &&
+                  note->nhdr.n_namesz == 4 &&
+                  memcmp(note->name, "GNU", 4) == 0) {
+                  ei->build_id_note = note;
+                  break;
+                }
 
+                note_offset = sizeof(ElfW(Nhdr)) +
+                  ALIGN(note->nhdr.n_namesz, 4) +
+                  ALIGN(note->nhdr.n_descsz, 4);
+                // 05 00 00 00 04 00 00 00 4f 48 4f 53 00 01 00 00 00 00 00 00
+                if (note->nhdr.n_type == 0x534f484f && note_len > 20) {
+                  // .note.ohos.ident is not a valid PT_NOTE section, use offset in section header later
+                  note_offset = 20;
+                }
+                note = (struct build_id_note*)((char *)note + note_offset);
+                note_len -= note_offset;
+            }
+          }
+          break;
+#endif
         default:
           break;
         }

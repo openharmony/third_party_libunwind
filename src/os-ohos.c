@@ -249,3 +249,20 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
   return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
 }
 
+uint8_t*
+unw_get_build_id (struct map_info* map)
+{
+#ifdef PARSE_BUILD_ID
+  if (map == NULL) {
+    return NULL;
+  }
+
+  if (map->ei.build_id_note == NULL) {
+    return NULL;
+  }
+
+  return map->ei.build_id_note->build_id;
+#else
+  return NULL;
+#endif
+}

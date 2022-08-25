@@ -16,6 +16,7 @@
 #ifndef LIBUNWIND_I_OHOS_H
 #define LIBUNWIND_I_OHOS_H
 #include <inttypes.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,8 @@ extern unw_word_t unw_get_previous_instr_sz(unw_cursor_t *);
 extern struct map_info* unw_get_map (unw_cursor_t *);
 // Get map info list of current unwind target
 extern struct map_info* unw_get_maps (unw_cursor_t *);
+// Get build id from cached map info
+extern uint8_t* unw_get_build_id (struct map_info* map);
 // Loop the symbol table to find matched symbol
 extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 // Set unwind process id, for caching maps

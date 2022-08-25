@@ -33,7 +33,6 @@ struct map_info
     int flags;
     char *path;
     struct elf_image ei;
-
     struct map_info *next;
     int sz;
     void* buf;
