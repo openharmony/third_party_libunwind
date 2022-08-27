@@ -55,6 +55,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#ifdef PARSE_BUILD_ID
+#include <link.h>
+#endif
 
 #if defined(HAVE_ELF_H)
 # include <elf.h>
@@ -313,7 +316,13 @@ struct elf_dyn_info
     unw_dyn_info_t di_arm;      /* additional table info for .ARM.exidx */
 #endif
   };
-
+#ifdef PARSE_BUILD_ID
+struct build_id_note {
+    ElfW(Nhdr) nhdr;
+    char name[4];
+    uint8_t build_id[0];
+};
+#endif
 struct elf_image
   {
     void *image;                /* pointer to mmap'd image */
@@ -323,6 +332,9 @@ struct elf_image
     int load_bias;
     int load_offset;
     char* strtab;
+#ifdef PARSE_BUILD_ID
+    struct build_id_note* build_id_note;
+#endif
   };
 
 static inline void invalidate_edi (struct elf_dyn_info *edi)
