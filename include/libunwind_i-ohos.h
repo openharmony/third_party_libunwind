@@ -37,7 +37,7 @@ extern struct map_info* unw_get_map (unw_cursor_t *);
 // Get map info list of current unwind target
 extern struct map_info* unw_get_maps (unw_cursor_t *);
 // Get build id from cached map info
-extern uint8_t* unw_get_build_id (struct map_info* map);
+extern bool unw_get_build_id(struct map_info* map, uint8_t** build_id_ptr, size_t* length);
 // Loop the symbol table to find matched symbol
 extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 // Set unwind process id, for caching maps
