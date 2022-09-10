@@ -104,6 +104,12 @@ maps_destroy_list(struct map_info *map_info)
         munmap(map->ei.image, map->ei.size);
         map->ei.image = NULL;
       }
+
+      if (map->mdi.image != MAP_FAILED && map->mdi.image != NULL) {
+        munmap(map->mdi.image, map->mdi.size);
+        map->mdi.image = NULL;
+      }
+
       if (map->path) {
         free(map->path);
         map->path = NULL;
@@ -195,9 +201,11 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
       if (ret < 0)
         {
           map->ei.image = NULL;
+          map->ei.has_try_load = 1;
           Dprintf("Failed to elf_map_image for ip:%p\n", (void*)ip);
           return NULL;
         }
+      map->ei.mdi = &(map->mdi);
     }
 
   if (find_cached_map) {

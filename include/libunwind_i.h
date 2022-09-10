@@ -335,6 +335,8 @@ struct elf_image
 #ifdef PARSE_BUILD_ID
     struct build_id_note* build_id_note;
 #endif
+    struct elf_image* mdi;
+    int has_try_load;
   };
 
 static inline void invalidate_edi (struct elf_dyn_info *edi)
