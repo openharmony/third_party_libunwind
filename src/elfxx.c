@@ -193,8 +193,10 @@ elf_w (find_symbol_info_in_image) (struct elf_image *ei,
           symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
           syment_size = shdr->sh_entsize;
           strtab = elf_w (string_table) (ei, shdr->sh_link);
-          if (!strtab)
+          if (!strtab) {
+            Dprintf( "no strtab?\n");
             break;
+          }
 
           for (sym = symtab;
                sym < symtab_end;
@@ -294,7 +296,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   uint8_t *compressed = NULL;
   uint64_t memlimit = UINT64_MAX; /* no memory limit */
   size_t compressed_len, uncompressed_len;
-
+  mdi->has_try_load = 1;
   shdr = elf_w (find_section) (ei, ".gnu_debugdata");
   if (!shdr)
     return 0;
@@ -305,7 +307,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   uncompressed_len = xz_uncompressed_size (compressed, compressed_len);
   if (uncompressed_len == 0)
     {
-      Debug (1, "invalid .gnu_debugdata contents\n");
+      Dprintf("invalid .gnu_debugdata contents\n");
       return 0;
     }
 
@@ -323,8 +325,9 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
                                     mdi->image, &out_pos, mdi->size);
   if (lret != LZMA_OK)
     {
-      Debug (1, "LZMA decompression failed: %d\n", lret);
+      Dprintf( "LZMA decompression failed: %d\n", lret);
       munmap (mdi->image, mdi->size);
+      mdi->image = NULL;
       return 0;
     }
 
@@ -558,18 +561,20 @@ int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
 {
   Elf_W (Addr) load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
   int ret = elf_w (find_symbol_info_in_image) (ei, load_offset, pc, buf_sz, buf, sym_start, sym_end);
+  if (ret == 0) {
+    return ret;
+  } 
 
-  struct elf_image mdi;
-  if (elf_w (extract_minidebuginfo) (ei, &mdi))
-    {
-      int ret_mdi = elf_w (find_symbol_info_in_image) (ei, load_offset, pc, buf_sz, buf, sym_start, sym_end);
-      if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
-        {
-          ret = ret_mdi;
-        }
+  if (ei->mdi == NULL) {
+    return ret;
+  }
 
-      munmap (mdi.image, mdi.size);
-    }
+  if (ei->mdi->image == NULL && ei->mdi->has_try_load) {
+    return ret;
+  }
 
+  if (ei->mdi->image != NULL || elf_w (extract_minidebuginfo) (ei, ei->mdi)) {
+      ret = elf_w (find_symbol_info_in_image) (ei->mdi, load_offset, pc, buf_sz, buf, sym_start, sym_end);
+  }
   return ret;
 }
