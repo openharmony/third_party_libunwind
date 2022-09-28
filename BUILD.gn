@@ -546,3 +546,273 @@ if (defined(ohos_lite)) {
     subsystem_name = "hiviewdfx"
   }
 }
+
+if (!defined(ohos_lite)) {
+  import("//build/test.gni")
+  module_output_path = "hiviewdfx/faultloggerd"
+  group("unittest") {
+    testonly = true
+    deps = [
+      ":Gtest_bt",
+      ":Gtest_dyn1",
+      ":Gtest_init",
+      ":Gtest_trace",
+      ":Ltest_bt",
+      ":Ltest_cxx_exceptions",
+      ":Ltest_dyn1",
+      ":Ltest_init",
+      ":Ltest_init_local_signal",
+      ":Ltest_mem_validate",
+      ":Ltest_nocalloc",
+      ":Ltest_nomalloc",
+      ":Ltest_trace",
+      ":test_ptrace_misc",
+      ":test_static_link",
+    ]
+  }
+  config("unwind_test") {
+    cflags = [ "-O0" ]
+  }
+
+  ohos_unittest("Gtest_init") {
+    module_out_path = module_output_path
+    sources = [ "tests/Gtest-init.cxx" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_init") {
+    module_out_path = module_output_path
+    sources = [ "tests/Ltest-init.cxx" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_cxx_exceptions") {
+    module_out_path = module_output_path
+    sources = [ "tests/Ltest-cxx-exceptions.cxx" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    cflags = [ "-fexceptions" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+    remove_configs = [ "//build/config/compiler:no_exceptions" ]
+  }
+
+  ohos_unittest("Ltest_init_local_signal") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Ltest-init-local-signal-lib.c",
+      "tests/Ltest-init-local-signal.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Gtest_dyn1") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Gtest-dyn1.c",
+      "tests/flush-cache.h",
+    ]
+    if (target_cpu == "arm") {
+      sources += [ "tests/flush-cache.S" ]
+    }
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    cflags = [ "-DHAVE__BUILTIN___CLEAR_CACHE" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_dyn1") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Ltest-dyn1.c",
+      "tests/flush-cache.h",
+    ]
+    if (target_cpu == "arm") {
+      sources += [ "tests/flush-cache.S" ]
+    }
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    cflags = [ "-DHAVE__BUILTIN___CLEAR_CACHE" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("test_static_link") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/test-static-link-gen.c",
+      "tests/test-static-link-loc.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Gtest_bt") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Gtest-bt.c",
+      "tests/dummy_backtrace.c",
+      "tests/ident.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_bt") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Ltest-bt.c",
+      "tests/dummy_backtrace.c",
+      "tests/ident.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("test_ptrace_misc") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/ident.c",
+      "tests/test-ptrace-misc.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_nomalloc") {
+    module_out_path = module_output_path
+    sources = [ "tests/Ltest-nomalloc.c" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_nocalloc") {
+    module_out_path = module_output_path
+    sources = [ "tests/Ltest-nocalloc.c" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Gtest_trace") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Gtest-trace.c",
+      "tests/dummy_backtrace.c",
+      "tests/ident.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_trace") {
+    module_out_path = module_output_path
+    sources = [
+      "tests/Ltest-trace.c",
+      "tests/dummy_backtrace.c",
+      "tests/ident.c",
+    ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+
+  ohos_unittest("Ltest_mem_validate") {
+    module_out_path = module_output_path
+    sources = [ "tests/Ltest-mem-validate.c" ]
+    include_dirs = [
+      "tests",
+      "include",
+    ]
+    configs = [ ":unwind_test" ]
+    deps = [ ":libunwind" ]
+    subsystem_name = "hiviewdfx"
+    part_name = "faultloggerd"
+  }
+} else {
+  group("unittest") {
+    testonly = true
+    deps = []
+  }
+}
