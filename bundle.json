@@ -24,7 +24,7 @@
         "build": {
             "sub_component": [],
             "inner_kits": [],
-            "test": []
+            "test": [ "//third_party/libunwind:unittest" ]
         }
     }
 }
