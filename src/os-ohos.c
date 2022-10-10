@@ -177,6 +177,9 @@ unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
 #elif defined(__aarch64__)
   c->dwarf.ip = regs[UNW_AARCH64_PC];
   c->dwarf.cfa = regs[UNW_REG_SP];
+#elif defined(__x86_64__)
+  c->dwarf.ip = regs[UNW_REG_IP];
+  c->dwarf.cfa = regs[UNW_REG_SP];
 #endif
   return;
 }

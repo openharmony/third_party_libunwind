@@ -210,12 +210,21 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 static inline int
 dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
+
+  int reg_num;
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
-                                     0, c->as_arg);
+  if (DWARF_IS_REG_LOC (loc)) {
+    reg_num = DWARF_GET_LOC (loc);
+    if (reg_num >= 0 && reg_num < c->reg_sz) {
+      *val = c->ctx[reg_num];
+      return 1;
+    } else {
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
+                                      0, c->as_arg);
+    }
+  }
   if (DWARF_IS_MEM_LOC (loc))
     return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
                                      0, c->as_arg);
