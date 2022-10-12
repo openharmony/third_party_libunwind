@@ -87,9 +87,13 @@ maps_init (struct map_iterator *mi, pid_t pid)
   char path[sizeof ("/proc/0123456789/maps")], *cp;
 
   memcpy (path, "/proc/", 6);
-  cp = unw_ltoa (path + 6, pid);
-  assert (cp + 6 < path + sizeof (path));
-  memcpy (cp, "/maps", 6);
+  if (pid == -1) {
+    memcpy (path + 6, "self/maps", 10);
+  } else {
+    cp = unw_ltoa (path + 6, pid);
+    assert (cp + 6 < path + sizeof (path));
+    memcpy (cp, "/maps", 6);
+  }
 
   mi->fd = open (path, O_RDONLY);
   if (mi->fd >= 0)

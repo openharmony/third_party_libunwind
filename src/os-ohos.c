@@ -136,7 +136,7 @@ unw_init_local_address_space(unw_addr_space_t* as)
 
   (*as)= (unw_addr_space_t)calloc(1, sizeof(struct unw_addr_space));
   unw_init_local_addr_space(*as);
-  int pid = getpid();
+  int pid = -1;
   (*as)->pid = pid;
   (*as)->map_list = maps_create_list(pid);
 #endif
