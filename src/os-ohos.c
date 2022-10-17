@@ -227,11 +227,13 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
 
   pthread_mutex_lock(&lock);
   if (step_ark_managed_native_frame_fn != NULL) {
+    pthread_mutex_unlock(&lock);
     return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
   }
 
   if (has_try_load_ark_lib) {
     Dprintf("Failed to load ark library.\n");
+    pthread_mutex_unlock(&lock);
     return -1;
   }
 
@@ -239,6 +241,7 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
   handle = dlopen(ARK_LIB_NAME, RTLD_LAZY);
   if (handle == NULL) {
     Dprintf("Failed to load library(%s).\n", dlerror());
+    pthread_mutex_unlock(&lock);
     return -1;
   }
 
@@ -246,9 +249,11 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
   if (!step_ark_managed_native_frame_fn) {
     Dprintf("Failed to find symbol(%s).\n", dlerror());
     handle = NULL;
+    pthread_mutex_unlock(&lock);
     return -1;
   }
 
+  pthread_mutex_unlock(&lock);
   return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
 }
 
