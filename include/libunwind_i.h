@@ -133,7 +133,7 @@ byte_order_is_big_endian(int byte_order)
 }
 
 static inline int
-target_is_big_endian()
+target_is_big_endian(void)
 {
     return byte_order_is_big_endian(UNW_BYTE_ORDER);
 }
@@ -173,7 +173,7 @@ target_is_big_endian()
 
 /* Type of a mask that can be used to inhibit preemption.  At the
    userlevel, preemption is caused by signals and hence sigset_t is
-   appropriate.  In constrast, the Linux kernel uses "unsigned long"
+   appropriate.  In contrast, the Linux kernel uses "unsigned long"
    to hold the processor "flags" instead.  */
 typedef sigset_t intrmask_t;
 
