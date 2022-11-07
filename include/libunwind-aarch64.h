@@ -37,11 +37,7 @@ extern "C" {
 #include <stdalign.h>
 
 #ifndef UNW_EMPTY_STRUCT
-#  ifdef __GNUC__
-#    define UNW_EMPTY_STRUCT
-#  else
-#    define UNW_EMPTY_STRUCT uint8_t unused;
-#  endif
+#  define UNW_EMPTY_STRUCT uint8_t unused;
 #endif
 
 #define UNW_TARGET      aarch64
@@ -69,7 +65,7 @@ typedef long double unw_tdep_fpreg_t;
 typedef struct
   {
     /* no aarch64-specific auxiliary proc-info */
-    uint8_t placeholder;
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_proc_info_t;
 
@@ -168,7 +164,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_AARCH64_X30,
     UNW_TDEP_SP = UNW_AARCH64_SP,
-    UNW_TDEP_EH = UNW_AARCH64_X0,
+    UNW_TDEP_EH = UNW_AARCH64_X0
 
   }
 aarch64_regnum_t;
@@ -179,7 +175,7 @@ aarch64_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
-    uint8_t placeholder;
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_save_loc_t;
 
@@ -232,7 +228,7 @@ typedef ucontext_t unw_tdep_context_t;
 #include "libunwind-common.h"
 #include "libunwind-dynamic.h"
 
-#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
+#define UNW_BASE (register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;)
 
 #define unw_tdep_getcontext(uc) ({					\
   unw_tdep_context_t *unw_ctx = (uc);					\

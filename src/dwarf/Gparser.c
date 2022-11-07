@@ -408,9 +408,9 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, -(val * dci->data_align));
+          set_reg (sr, regnum, DWARF_WHERE_CFAREL, ~(val * dci->data_align) + 1);
           Debug (15, "CFA_GNU_negative_offset_extended cfa+0x%lx\n",
-                 (long) -(val * dci->data_align));
+                 (long) (~(val * dci->data_align) + 1));
           break;
 
         case DW_CFA_GNU_window_save:
@@ -793,6 +793,15 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   int i, ret;
   void *arg;
 
+  /* In the case that we have incorrect CFI, the return address column may be
+   * outside the valid range of data and will read invalid data.  Protect
+   * against the errant read and indicate that we have a bad frame.  */
+  if (rs->ret_addr_column >= DWARF_NUM_PRESERVED_REGS) {
+    Dprintf ("%s: return address entry %zu is outside of range of CIE",
+             __FUNCTION__, rs->ret_addr_column);
+    return -UNW_EBADFRAME;
+  }
+
   prev_ip = c->ip;
   prev_cfa = c->cfa;
 
@@ -931,7 +940,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 static int
 find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 {
-  dwarf_reg_state_t *rs;
+  dwarf_reg_state_t *rs = NULL;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -977,13 +986,11 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	  cache->links[c->prev_rs].hint = index + 1;
 	  c->prev_rs = index;
 	}
+      if (ret >= 0)
+        tdep_reuse_frame (c, cache->links[index].signal_frame);
       put_rs_cache (c->as, cache, &saved_mask);
     }
-  if (ret < 0)
-      return ret;
-  if (cache)
-    tdep_reuse_frame (c, cache->links[index].signal_frame);
-  return 0;
+  return ret;
 }
 
 /* The function finds the saved locations and applies the register
@@ -1009,6 +1016,7 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
      args_size, and set cursor appropriately.  Only
      needed for unw_resume */
   dwarf_state_record_t sr;
+  sr.args_size = 0;
   int ret;
 
   /* Lookup it up the slow way... */
