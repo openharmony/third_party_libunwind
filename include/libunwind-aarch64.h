@@ -228,7 +228,7 @@ typedef ucontext_t unw_tdep_context_t;
 #include "libunwind-common.h"
 #include "libunwind-dynamic.h"
 
-#define UNW_BASE (register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;)
+#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
 
 #define unw_tdep_getcontext(uc) ({					\
   unw_tdep_context_t *unw_ctx = (uc);					\
