@@ -80,7 +80,7 @@ arm_exidx_step (struct cursor *c)
 
   if (c->dwarf.ip == old_ip && c->dwarf.cfa == old_cfa)
     {
-      Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
+      Debug (1, "%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
                __FUNCTION__, (long) c->dwarf.ip);
       return -UNW_EBADFRAME;
     }
