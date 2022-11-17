@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "map_info.h"
 
 #define arm_exidx_step  UNW_OBJ(arm_exidx_step)
+
 static inline int
 arm_exidx_step (struct cursor *c)
 {
@@ -55,17 +56,22 @@ arm_exidx_step (struct cursor *c)
                                      c->dwarf.as_arg);
   if (ret == -UNW_ENOINFO)
     {
+#ifdef UNW_LOCAL_ONLY
+      if ((ret = arm_find_proc_info2 (c->dwarf.as, ip, &c->dwarf.pi,
+                                      1, c->dwarf.as_arg,
+                                      UNW_ARM_METHOD_EXIDX)) < 0)
+        return ret;
+#else
       if ((ret = tdep_find_proc_info (&c->dwarf, ip, 1)) < 0)
         return ret;
+#endif
     }
 
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
   ret = arm_exidx_extract (&c->dwarf, buf);
-  if (ret == -UNW_ESTOPUNWIND)
-    return 0;
-  else if (ret < 0)
+  if (ret < 0)
     return ret;
 
   ret = arm_exidx_decode (buf, ret, &c->dwarf);
@@ -74,12 +80,13 @@ arm_exidx_step (struct cursor *c)
 
   if (c->dwarf.ip == old_ip && c->dwarf.cfa == old_cfa)
     {
-      Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
+      Debug (1, "%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
                __FUNCTION__, (long) c->dwarf.ip);
       return -UNW_EBADFRAME;
     }
 
   c->dwarf.pi_valid = 0;
+
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
 

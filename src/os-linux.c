@@ -86,7 +86,7 @@ maps_create_list(pid_t pid)
       munmap(buf, buf_sz * sizeof(struct map_info));
   }
   maps_close (&mi);
-  Dprintf("Finish create map list, sz:%d, index%d.\n", sz, index);
+  Debug(12, "Finish create map list, sz:%d, index%d.\n", sz, index);
   return map_list;
 }
 
