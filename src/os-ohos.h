@@ -34,6 +34,7 @@ extern void unw_set_target_pid(unw_addr_space_t as, int pid);
 extern void unw_init_local_address_space(unw_addr_space_t* as);
 extern void unw_destroy_local_address_space(unw_addr_space_t as);
 extern void unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz);
+extern void unw_set_adjust_pc(struct unw_cursor *cursor, uint64_t pc);
 extern int unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr_t* sp, char* buf, size_t buf_sz);
 extern bool unw_is_ark_managed_frame(struct cursor* c);
 extern bool unw_get_build_id(struct map_info* map, uint8_t** build_id_ptr, size_t* length);
