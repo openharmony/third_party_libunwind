@@ -184,6 +184,13 @@ unw_set_context(unw_cursor_t * cursor, uintptr_t regs[], int reg_sz)
   return;
 }
 
+void
+unw_set_adjust_pc(struct unw_cursor *cursor, uint64_t pc)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  c->dwarf.ip = pc;
+}
+
 bool
 unw_is_ark_managed_frame(struct cursor* c)
 {
