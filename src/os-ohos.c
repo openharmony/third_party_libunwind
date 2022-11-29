@@ -221,8 +221,8 @@ unw_is_ark_managed_frame(struct cursor* c)
 
 #define ARK_LIB_NAME "libark_jsruntime.so"
 int (*step_ark_managed_native_frame_fn)(int, uintptr_t*, uintptr_t*, uintptr_t*, char*, size_t);
+int (*get_ark_js_heap_crash_info_fn)(int, uintptr_t *, uintptr_t *, int, char *, size_t);
 void* handle = NULL; // this handle will never be unloaded
-bool has_try_load_ark_lib = false;
 pthread_mutex_t lock;
 
 int
@@ -238,18 +238,13 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
     return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
   }
 
-  if (has_try_load_ark_lib) {
-    Dprintf("Failed to load ark library.\n");
-    pthread_mutex_unlock(&lock);
-    return -1;
-  }
-
-  has_try_load_ark_lib = true;
-  handle = dlopen(ARK_LIB_NAME, RTLD_LAZY);
   if (handle == NULL) {
-    Dprintf("Failed to load library(%s).\n", dlerror());
-    pthread_mutex_unlock(&lock);
-    return -1;
+    handle = dlopen(ARK_LIB_NAME, RTLD_LAZY);
+    if (handle == NULL) {
+      Dprintf("Failed to load library(%s).\n", dlerror());
+      pthread_mutex_unlock(&lock);
+      return -1;
+    }
   }
 
   *(void**)(&step_ark_managed_native_frame_fn) = dlsym(handle, "step_ark_managed_native_frame");
@@ -262,6 +257,40 @@ unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* fp, uintptr
 
   pthread_mutex_unlock(&lock);
   return step_ark_managed_native_frame_fn(pid, pc, fp, sp, buf, buf_sz);
+}
+
+int
+unw_get_ark_js_heap_crash_info(int pid, uintptr_t* x20, uintptr_t* fp, int out_js_info, char* buf, size_t buf_sz)
+{
+  if (get_ark_js_heap_crash_info_fn != NULL) {
+    return get_ark_js_heap_crash_info_fn(pid, x20, fp, out_js_info, buf, buf_sz);
+  }
+
+  pthread_mutex_lock(&lock);
+  if (get_ark_js_heap_crash_info_fn != NULL) {
+    pthread_mutex_unlock(&lock);
+    return get_ark_js_heap_crash_info_fn(pid, x20, fp, out_js_info, buf, buf_sz);
+  }
+
+  if (handle == NULL) {
+    handle = dlopen(ARK_LIB_NAME, RTLD_LAZY);
+    if (handle == NULL) {
+      Dprintf("Failed to load library(%s).\n", dlerror());
+      pthread_mutex_unlock(&lock);
+      return -1;
+    }
+  }
+
+  *(void**)(&get_ark_js_heap_crash_info_fn) = dlsym(handle, "get_ark_js_heap_crash_info");
+  if (!get_ark_js_heap_crash_info_fn) {
+    Dprintf("Failed to find symbol(%s).\n", dlerror());
+    handle = NULL;
+    pthread_mutex_unlock(&lock);
+    return -1;
+  }
+
+  pthread_mutex_unlock(&lock);
+  return get_ark_js_heap_crash_info_fn(pid, x20, fp, out_js_info, buf, buf_sz);
 }
 
 bool
