@@ -188,8 +188,14 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
     return cursor->dwarf.cached_map;
   }
 
-  if (as->map_list == NULL && pid > 0)
+  if (as->map_list == NULL && pid > 0) {
     as->map_list = maps_create_list(pid);
+    if (as->map_list == NULL) {
+      Dprintf("Failed to maps_create_list for pid:%d\n", pid);
+      return NULL;
+    }
+  }
+    
 
   map = get_map(as->map_list, ip);
   if (!map)
