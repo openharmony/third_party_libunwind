@@ -284,6 +284,8 @@ config("unwind_config_public") {
     cflags += [ "-Wno-incompatible-pointer-types" ]
   } else if (target_cpu == "x64" || target_cpu == "x86_64") {
     include_dirs += [ "include/tdep-x86_64" ]
+  } else if (target_cpu == "mipsel") {
+    include_dirs += [ "include/tdep-mips" ]
   }
 }
 
