@@ -56,7 +56,8 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
-  unw_word_t max_load_addr = 0;
+  unw_word_t max_load_addr = (unw_word_t)(ei->image) + ei->size;
+  unw_word_t min_load_addr = (unw_word_t)(ei->image);
   unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
@@ -73,7 +74,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   /* XXX: Much of this code is Linux/LSB-specific.  */
   if (!elf_w(valid_object) (ei))
     return -UNW_ENOINFO;
-  
+
+  if (path == NULL || strlen(path) > PAGE_SIZE || max_load_addr < min_load_addr) {
+      return -UNW_ENOINFO;
+  }
+
   if (ei->has_dyn_info == 1 &&
       ei->elf_dyn_info.start_ip <= ip &&
       ei->elf_dyn_info.end_ip >= ip) {
@@ -83,6 +88,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 
   ehdr = ei->image;
   phdr = (Elf_W(Phdr) *) ((char *) ei->image + ehdr->e_phoff);
+  if (((unw_word_t)phdr) + sizeof(Elf_W(Phdr)) > max_load_addr ||
+      ((unw_word_t)phdr) + sizeof(Elf_W(Phdr)) < min_load_addr) {
+      return -UNW_ENOINFO;
+  }
+
 #ifdef PARSE_BUILD_ID
   struct build_id_note* note;
   int note_len;
@@ -91,6 +101,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
   unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
+      if (((unw_word_t)(&(phdr[i])) + sizeof(Elf_W(Phdr))) > max_load_addr ||
+          ((unw_word_t)(&(phdr[i])) + sizeof(Elf_W(Phdr))) < min_load_addr) {
+          break;
+      }
+
       switch (phdr[i].p_type)
         {
         case PT_LOAD:
@@ -120,13 +135,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
               ei->load_offset = 0;
             }
           }
-
-          /* Add For Cache MAP And ELF */
-          if ((uintptr_t) ei->image + phdr->p_filesz > max_load_addr)
-            max_load_addr = (uintptr_t) ei->image + phdr->p_filesz;
           break;
-          /* Add For Cache MAP And ELF */
-
         case PT_GNU_EH_FRAME:
 #if defined __sun
         case PT_SUNW_UNWIND:
@@ -147,6 +156,12 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
         case PT_NOTE: {
             note = (void *)(ei->image + phdr[i].p_offset);
             note_len = phdr[i].p_filesz;
+            if (((unw_word_t)note + note_len) > max_load_addr ||
+                ((unw_word_t)note + note_len) < min_load_addr) {
+              Dprintf("Target Note Section is not valid:%s\n", path);
+              break;
+            }
+
             while (note_len >= (int)(sizeof(struct build_id_note))) {
                 if (note->nhdr.n_type == NT_GNU_BUILD_ID &&
                   note->nhdr.n_descsz != 0 &&
@@ -189,18 +204,20 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
           /* For dynamicly linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
-		/* Add For Cache MAP And ELF */
-                Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-						 + (char *) ei->image);
-		/* Add For Cache MAP And ELF */
-          for (; dyn->d_tag != DT_NULL; ++dyn)
-            if (dyn->d_tag == DT_PLTGOT)
-              {
-                /* Assume that _DYNAMIC is writable and GLIBC has
-                   relocated it (true for x86 at least).  */
-                edi->di_cache.gp = dyn->d_un.d_ptr;
-                break;
+          Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset + (char *) ei->image);
+          for (; dyn->d_tag != DT_NULL; ++dyn) {
+              if (((unw_word_t)dyn + sizeof(Elf_W(Dyn))) > max_load_addr ||
+                  ((unw_word_t)dyn + sizeof(Elf_W(Dyn))) < min_load_addr) {
+                  break;
               }
+
+              if (dyn->d_tag == DT_PLTGOT) {
+                  /* Assume that _DYNAMIC is writable and GLIBC has
+                    relocated it (true for x86 at least).  */
+                  edi->di_cache.gp = dyn->d_un.d_ptr;
+                  break;
+              }
+          }
         }
       else
         /* Otherwise this is a static executable with no _DYNAMIC.  Assume
@@ -208,10 +225,13 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
            absolute.  */
         edi->di_cache.gp = 0;
 
-      /* Add For Cache MAP And ELF */
       hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
 					   + (char *) ei->image);
-      /* Add For Cache MAP And ELF */
+      if (((unw_word_t)hdr + sizeof(struct dwarf_eh_frame_hdr)) > max_load_addr ||
+          ((unw_word_t)hdr + sizeof(struct dwarf_eh_frame_hdr)) < min_load_addr) {
+          return -UNW_ENOINFO;
+      }
+
       if (hdr->version != DW_EH_VERSION)
         {
           if (path != NULL) {
@@ -244,9 +264,9 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 
       if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
         {
-    #if 1
+    #if 0
           abort ();
-    #else
+
           unw_word_t eh_frame_end;
 
           /* If there is no search table or it has an unsupported
