@@ -326,8 +326,17 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 {
   if (unlikely (write))
     {
-      Debug (16, "mem[%lx] <- %lx\n", addr, *val);
-      *(unw_word_t *) addr = *val;
+#ifdef IS_VALIDATE_MEM
+      if (maps_is_writable(as->map_list, addr)) {
+#endif
+        Debug (16, "mem[%lx] <- %lx\n", addr, *val);
+        *(unw_word_t *) addr = *val;
+#ifdef IS_VALIDATE_MEM
+      } else {
+        Debug (16, "Unwritable memory mem[%lx] <- %lx\n", addr, *val);
+        return -1;
+      }
+#endif
     }
   else
     {
@@ -338,8 +347,17 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
         Debug (16, "mem[%016lx] -> invalid\n", addr);
         return -1;
       }
-      *val = *(unw_word_t *) addr;
-      Debug (16, "mem[%lx] -> %lx\n", addr, *val);
+#ifdef IS_VALIDATE_MEM
+      if (maps_is_readable(as->map_list, addr)) {
+#endif
+        *val = *(unw_word_t *) addr;
+        Debug (16, "mem[%lx] -> %lx\n", addr, *val);
+#ifdef IS_VALIDATE_MEM
+      } else {
+        Debug (16, "Unreadable memory mem[%lx] <- %lx\n", addr, *val);
+        return -1;
+      }
+#endif
     }
   return 0;
 }

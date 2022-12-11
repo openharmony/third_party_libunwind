@@ -532,6 +532,7 @@ if (defined(ohos_lite)) {
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
+      "-DIS_VALIDATE_MEM",
     ]
   }
 

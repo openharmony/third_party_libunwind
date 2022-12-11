@@ -234,8 +234,9 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
 
       if (hdr->version != DW_EH_VERSION)
         {
-          Debug (1, "table `%s' has unexpected version %d\n",
-                 path, hdr->version);
+          if (path != NULL) {
+            Debug (1, "table `%s' has unexpected version %d\n", path, hdr->version);
+          }
           return -UNW_ENOINFO;
         }
 
