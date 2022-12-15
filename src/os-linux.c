@@ -162,7 +162,7 @@ int maps_is_readable(struct map_info *map_list, unw_word_t addr)
     return 1;
   struct map_info *map = get_map(map_list, addr);
   if (map != NULL)
-    return map->flags & PROT_READ;
+    return ((map->flags & PROT_READ) && (addr <= (map->end - sizeof(unw_word_t))));
   return 0;
 }
 
@@ -173,7 +173,7 @@ int maps_is_writable(struct map_info *map_list, unw_word_t addr)
     return 1;
   struct map_info *map = get_map(map_list, addr);
   if (map != NULL)
-    return map->flags & PROT_WRITE;
+    return ((map->flags & PROT_WRITE) && (addr <= (map->end - sizeof(unw_word_t))));
   return 0;
 }
 
@@ -188,8 +188,14 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
     return cursor->dwarf.cached_map;
   }
 
-  if (as->map_list == NULL && pid > 0)
+  if (as->map_list == NULL && pid > 0) {
     as->map_list = maps_create_list(pid);
+    if (as->map_list == NULL) {
+      Dprintf("Failed to maps_create_list for pid:%d\n", pid);
+      return NULL;
+    }
+  }
+    
 
   map = get_map(as->map_list, ip);
   if (!map)

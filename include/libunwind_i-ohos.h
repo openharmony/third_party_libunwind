@@ -40,6 +40,8 @@ extern struct map_info* unw_get_map (unw_cursor_t *);
 extern struct map_info* unw_get_maps (unw_cursor_t *);
 // Get build id from cached map info
 extern bool unw_get_build_id(struct map_info* map, uint8_t** build_id_ptr, size_t* length);
+// Get ark js heap crash info
+extern int unw_get_ark_js_heap_crash_info(int pid, uintptr_t* x20, uintptr_t* fp, int out_js_info, char* buf, size_t buf_sz);
 // Loop the symbol table to find matched symbol
 extern int unw_get_symbol_info(struct unw_cursor *cursor, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
 // Set unwind process id, for caching maps
