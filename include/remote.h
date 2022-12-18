@@ -5,6 +5,8 @@
    assume that all addresses are naturally aligned (e.g., 32-bit
    quantity is stored at a 32-bit-aligned address.  */
 
+#define WSIZE   (sizeof (unw_word_t))
+
 #ifdef UNW_LOCAL_ONLY
 
 static inline int
@@ -44,8 +46,6 @@ fetchw (unw_addr_space_t as, unw_accessors_t *a,
 }
 
 #else /* !UNW_LOCAL_ONLY */
-
-#define WSIZE   (sizeof (unw_word_t))
 
 static inline int
 fetch8 (unw_addr_space_t as, unw_accessors_t *a,
