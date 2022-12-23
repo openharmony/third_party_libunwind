@@ -16,6 +16,7 @@
 #ifndef LIBUNWIND_I_OHOS_H
 #define LIBUNWIND_I_OHOS_H
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus

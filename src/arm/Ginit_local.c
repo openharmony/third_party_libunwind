@@ -59,7 +59,7 @@ unw_init_local_common (unw_cursor_t *cursor, unw_context_t *uc, unsigned use_pre
 int 
 unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t *uc)
 {
-  int ret = unw_init_local_common(cursor, uc, 1);
+  int ret = unw_init_local_common(cursor, uc, 0);
   struct cursor *c = (struct cursor *) cursor;
   c->dwarf.as = as;
   return ret;
