@@ -62,15 +62,38 @@ unw_ltoa (char *buf, long val)
   return buf + len;
 }
 
+// now return lines of the maps
+static inline int
+get_maps_count(int fd)
+{
+  if (fd < 0) {
+    return -1;
+  }
+
+  char buffer[1];
+  int count = 0;
+  while(read(fd, buffer, 1) > 0) {
+    if (buffer[0] == '\n') {
+      count++;
+    }
+  }
+  lseek(fd, 0, SEEK_SET);
+  return count;
+}
+
 static inline int
 maps_init (struct map_iterator *mi, pid_t pid)
 {
   char path[sizeof ("/proc/0123456789/maps")], *cp;
 
   memcpy (path, "/proc/", 6);
-  cp = unw_ltoa (path + 6, pid);
-  assert (cp + 6 < path + sizeof (path));
-  memcpy (cp, "/maps", 6);
+  if (pid == -1) {
+    memcpy (path + 6, "self/maps", 10);
+  } else {
+    cp = unw_ltoa (path + 6, pid);
+    assert (cp + 6 < path + sizeof (path));
+    memcpy (cp, "/maps", 6);
+  }
 
   mi->fd = open (path, O_RDONLY);
   if (mi->fd >= 0)
@@ -89,7 +112,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
         {
           mi->offset = 0;
           mi->buf = mi->buf_end = cp + mi->buf_size;
-          return 0;
+          return get_maps_count(mi->fd);
         }
     }
   return -1;

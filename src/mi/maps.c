@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2008 CodeSourcery
+   Copyright (C) 2014 The Android Open Source Project
 
 This file is part of libunwind.
 
@@ -22,36 +22,51 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "init.h"
-#include "unwind_i.h"
+#include "libunwind_i.h"
+
+void
+unw_map_set (unw_addr_space_t as, unw_map_cursor_t *map_cursor)
+{
+  if (map_cursor != NULL)
+    as->map_list = map_cursor->map_list;
+  else
+    as->map_list = NULL;
+}
 
 int
-unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
+unw_map_cursor_create (unw_map_cursor_t *map_cursor, pid_t pid)
 {
-#ifdef UNW_LOCAL_ONLY
-  return -UNW_EINVAL;
-#else /* !UNW_LOCAL_ONLY */
-  struct cursor *c = (struct cursor *) cursor;
+  map_cursor->map_list = maps_create_list (pid);
 
-  if (!atomic_load(&tdep_init_done))
-    tdep_init ();
+  return map_cursor->map_list == NULL;
+}
 
-  Debug (1, "(cursor=%p)\n", c);
+void
+unw_map_cursor_destroy (unw_map_cursor_t *map_cursor)
+{
+  maps_destroy_list (map_cursor->map_list);
+}
 
-  c->dwarf.as = as;
-  if (as == unw_local_addr_space)
-    {
-      c->dwarf.as_arg = c;
-      c->uc = as_arg;
-    }
-  else
-    {
-      c->dwarf.as_arg = as_arg;
-      c->uc = 0;
-    }
-  c->dwarf.cached_map = NULL;
-  c->dwarf.rel_pc = 0;
-  c->dwarf.reg_sz = 0;
-  return common_init (c, 0);
-#endif /* !UNW_LOCAL_ONLY */
+void
+unw_map_cursor_reset (unw_map_cursor_t *map_cursor)
+{
+  map_cursor->cur_map = map_cursor->map_list;
+}
+
+int
+unw_map_cursor_get (unw_map_cursor_t *map_cursor, unw_map_t *unw_map)
+{
+  struct map_info *map_info = map_cursor->cur_map;
+
+  if (map_info == NULL)
+    return 0;
+
+  unw_map->start = map_info->start;
+  unw_map->end = map_info->end;
+  unw_map->flags = map_info->flags;
+  unw_map->path = map_info->path;
+
+  map_cursor->cur_map = map_info->next;
+
+  return 1;
 }

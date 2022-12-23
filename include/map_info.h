@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2008 CodeSourcery
+   Copyright (C) 2013 The Android Open Source Project
 
 This file is part of libunwind.
 
@@ -22,36 +22,30 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "init.h"
-#include "unwind_i.h"
+#ifndef map_info_h
+#define map_info_h
 
-int
-unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
-{
-#ifdef UNW_LOCAL_ONLY
-  return -UNW_EINVAL;
-#else /* !UNW_LOCAL_ONLY */
-  struct cursor *c = (struct cursor *) cursor;
+struct map_info
+  {
+    uintptr_t start;
+    uintptr_t end;
+    uintptr_t offset;
+    int flags;
+    char *path;
+    struct elf_image ei;
+    struct elf_image mdi;
+    struct map_info *next;
+    int sz;
+    void* buf;
+    int buf_sz;
+  };
 
-  if (!atomic_load(&tdep_init_done))
-    tdep_init ();
+int maps_is_readable(struct map_info *map_list, unw_word_t addr);
 
-  Debug (1, "(cursor=%p)\n", c);
+int maps_is_writable(struct map_info *map_list, unw_word_t addr);
 
-  c->dwarf.as = as;
-  if (as == unw_local_addr_space)
-    {
-      c->dwarf.as_arg = c;
-      c->uc = as_arg;
-    }
-  else
-    {
-      c->dwarf.as_arg = as_arg;
-      c->uc = 0;
-    }
-  c->dwarf.cached_map = NULL;
-  c->dwarf.rel_pc = 0;
-  c->dwarf.reg_sz = 0;
-  return common_init (c, 0);
-#endif /* !UNW_LOCAL_ONLY */
-}
+struct map_info *maps_create_list(pid_t pid);
+
+void maps_destroy_list(struct map_info *map_info);
+
+#endif /* map_info_h */

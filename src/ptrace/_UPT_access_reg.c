@@ -74,7 +74,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   return 0;
 
 badreg:
-  Debug (1, "bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
+  Dprintf ("bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
   return -UNW_EBADREG;
 }
 #elif HAVE_DECL_PTRACE_POKEUSER || HAVE_TTRACE
@@ -318,7 +318,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   return 0;
 
  badreg:
-  Debug (1, "bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
+  Dprintf ("bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
   return -UNW_EBADREG;
 }
 #elif HAVE_DECL_PT_GETREGS
@@ -354,7 +354,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   return 0;
 
  badreg:
-  Debug (1, "bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
+  Dprintf ("bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
   return -UNW_EBADREG;
 }
 #else

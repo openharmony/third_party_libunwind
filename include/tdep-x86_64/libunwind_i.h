@@ -37,6 +37,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #include "elf64.h"
+/* Add For Cache MAP And ELF */
+#include "map_info.h"
+/* Add For Cache MAP And ELF */
 #include "mempool.h"
 #include "dwarf.h"
 
@@ -71,7 +74,22 @@ struct unw_addr_space
     unw_word_t dyn_info_list_addr;      /* (cached) dyn_info_list_addr */
     struct dwarf_rs_cache global_cache;
     struct unw_debug_frame_list *debug_frames;
+    /* Add For Cache MAP And ELF */
+    struct map_info *map_list;
+    /* Add For Cache MAP And ELF */
+    unw_cursor_t *cursor;
+    int pid;
    };
+
+static inline struct cursor *
+get_cursor_from_as(unw_addr_space_t as)
+{
+  if (as->cursor) {
+    return (struct cursor *)(as->cursor);
+  }
+
+  return NULL;
+}
 
 struct cursor
   {
@@ -192,12 +210,21 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 static inline int
 dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
+
+  int reg_num;
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
-                                     0, c->as_arg);
+  if (DWARF_IS_REG_LOC (loc)) {
+    reg_num = DWARF_GET_LOC (loc);
+    if (reg_num >= 0 && reg_num < c->reg_sz) {
+      *val = c->ctx[reg_num];
+      return 1;
+    } else {
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
+                                      0, c->as_arg);
+    }
+  }
   if (DWARF_IS_MEM_LOC (loc))
     return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
                                      0, c->as_arg);
@@ -274,9 +301,10 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                                      unw_dyn_info_t *di, unw_proc_info_t *pi,
                                      int need_unwind_info, void *arg);
 extern void *x86_64_r_uc_addr (ucontext_t *uc, int reg);
-extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-                               unsigned long *segbase, unsigned long *mapoff,
-                               char *path, size_t pathlen);
+/* Add For Cache MAP And ELF */
+extern struct map_info *tdep_get_elf_image (unw_addr_space_t as, pid_t pid,
+					    unw_word_t ip);
+/* Add For Cache MAP And ELF */
 extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);

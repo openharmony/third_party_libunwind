@@ -157,6 +157,78 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   return ret;
 }
 
+static int
+elf_w (find_symbol_info_in_image) (struct elf_image *ei,
+                                   unw_word_t load_offset,
+                                   uint64_t pc,
+                                   int buf_sz,
+                                   char *buf,
+                                   uint64_t *sym_start,
+                                   uint64_t *sym_end)
+{
+  size_t syment_size;
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Sym) *sym, *symtab, *symtab_end;
+  Elf_W (Shdr) *shdr;
+  Elf_W (Addr) val;
+  int i, ret = -UNW_ENOINFO;
+  char *strtab;
+  uint64_t start = 0;
+  uint64_t end = 0;
+
+  if (!elf_w (valid_object) (ei))
+    return -UNW_ENOINFO;
+
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return -UNW_ENOINFO;
+
+  for (i = 0; i < ehdr->e_shnum; ++i)
+    {
+      switch (shdr->sh_type)
+        {
+        case SHT_SYMTAB:
+        case SHT_DYNSYM:
+          symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
+          symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
+          syment_size = shdr->sh_entsize;
+          strtab = elf_w (string_table) (ei, shdr->sh_link);
+          if (!strtab) {
+            Dprintf( "no strtab?\n");
+            break;
+          }
+
+          for (sym = symtab;
+               sym < symtab_end;
+               sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
+            {
+              if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
+                  && sym->st_shndx != SHN_UNDEF)
+                {
+                  val = sym->st_value;
+                  if (sym->st_shndx != SHN_ABS)
+                    val += load_offset;
+                  start = (uint64_t)val;
+                  end = start + (uint64_t)sym->st_size;
+                  if (pc >= start && pc <= end) {
+                    strncpy (buf, strtab + sym->st_name, buf_sz);
+                    buf[buf_sz - 1] = '\0';
+                    *sym_start = start;
+                    *sym_end = end;
+                    return 0;
+                  }
+                }
+            }
+          break;
+
+        default:
+          break;
+        } 
+      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
+    }
+  return ret;
+}
+
 static Elf_W (Addr)
 elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
                          unsigned long mapoff)
@@ -224,7 +296,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   uint8_t *compressed = NULL;
   uint64_t memlimit = UINT64_MAX; /* no memory limit */
   size_t compressed_len, uncompressed_len;
-
+  mdi->has_try_load = 1;
   shdr = elf_w (find_section) (ei, ".gnu_debugdata");
   if (!shdr)
     return 0;
@@ -235,7 +307,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   uncompressed_len = xz_uncompressed_size (compressed, compressed_len);
   if (uncompressed_len == 0)
     {
-      Debug (1, "invalid .gnu_debugdata contents\n");
+      Dprintf("invalid .gnu_debugdata contents\n");
       return 0;
     }
 
@@ -253,8 +325,9 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
                                     mdi->image, &out_pos, mdi->size);
   if (lret != LZMA_OK)
     {
-      Debug (1, "LZMA decompression failed: %d\n", lret);
+      Dprintf( "LZMA decompression failed: %d\n", lret);
       munmap (mdi->image, mdi->size);
+      mdi->image = NULL;
       return 0;
     }
 
@@ -284,7 +357,7 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
-  load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
+  load_offset = segbase - ei->load_offset;
   ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
@@ -311,31 +384,22 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   return ret;
 }
 
+/* Add For Cache MAP And ELF */
 HIDDEN int
 elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
                        char *buf, size_t buf_len, unw_word_t *offp)
 {
-  unsigned long segbase, mapoff;
-  struct elf_image ei;
   int ret;
-  char file[PATH_MAX];
+  struct map_info *map = tdep_get_elf_image (as, pid, ip);
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, file, PATH_MAX);
-  if (ret < 0)
-    return ret;
+  if (map == NULL)
+    return -UNW_ENOINFO;
 
-  ret = elf_w (load_debuglink) (file, &ei, 1);
-  if (ret < 0)
-    return ret;
-
-  ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, mapoff, ip, buf, buf_len, offp);
-
-  munmap (ei.image, ei.size);
-  ei.image = NULL;
+  ret = elf_w (get_proc_name_in_image) (as, &map->ei, map->start, map->offset, ip, buf, buf_len, offp);
 
   return ret;
 }
-
+/* Add For Cache MAP And ELF */
 HIDDEN Elf_W (Shdr)*
 elf_w (find_section) (struct elf_image *ei, const char* secname)
 {
@@ -399,7 +463,7 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
     {
       ret = elf_map_image(ei, file);
       if (ret)
-	return ret;
+        return ret;
     }
 
   prev_image = ei->image;
@@ -484,4 +548,33 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
   }
 
   return 0;
+}
+
+int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
+                                      unsigned long segbase,
+                                      unsigned long mapoff,
+                                      uint64_t pc,
+                                      int buf_sz,
+                                      char *buf,
+                                      uint64_t *sym_start,
+                                      uint64_t *sym_end)
+{
+  Elf_W (Addr) load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
+  int ret = elf_w (find_symbol_info_in_image) (ei, load_offset, pc, buf_sz, buf, sym_start, sym_end);
+  if (ret == 0) {
+    return ret;
+  } 
+
+  if (ei->mdi == NULL) {
+    return ret;
+  }
+
+  if (ei->mdi->image == NULL && ei->mdi->has_try_load) {
+    return ret;
+  }
+
+  if (ei->mdi->image != NULL || elf_w (extract_minidebuginfo) (ei, ei->mdi)) {
+      ret = elf_w (find_symbol_info_in_image) (ei->mdi, load_offset, pc, buf_sz, buf, sym_start, sym_end);
+  }
+  return ret;
 }
