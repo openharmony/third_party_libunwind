@@ -55,6 +55,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <errno.h>
+#include <stdio.h>
+#ifdef PARSE_BUILD_ID
+#include <link.h>
+#endif
 
 #if defined(HAVE_ELF_H)
 # include <elf.h>
@@ -130,7 +135,7 @@ byte_order_is_big_endian(int byte_order)
 }
 
 static inline int
-target_is_big_endian()
+target_is_big_endian(void)
 {
     return byte_order_is_big_endian(UNW_BYTE_ORDER);
 }
@@ -170,7 +175,7 @@ target_is_big_endian()
 
 /* Type of a mask that can be used to inhibit preemption.  At the
    userlevel, preemption is caused by signals and hence sigset_t is
-   appropriate.  In constrast, the Linux kernel uses "unsigned long"
+   appropriate.  In contrast, the Linux kernel uses "unsigned long"
    to hold the processor "flags" instead.  */
 typedef sigset_t intrmask_t;
 
@@ -278,7 +283,6 @@ do {                                                                    \
 # define Dprintf(/* format */ ...)                                      \
   fprintf (stderr, /* format */ __VA_ARGS__)
 #else
-# include <stdio.h>
 # define Debug(level, /* format */ ...)
 # define Dprintf(/* format */ ...)                                      \
   fprintf (stderr, /* format */ __VA_ARGS__)
@@ -297,15 +301,13 @@ extern unw_word_t _U_dyn_info_list_addr (void);
 
 /* This is needed/used by ELF targets only.  */
 
-struct elf_image
-  {
-    void *image;                /* pointer to mmap'd image */
-    size_t size;                /* (file-) size of the image */
-  };
-
 struct elf_dyn_info
   {
-    struct elf_image ei;
+    /* Add For Cache MAP And ELF*/
+    /* Removed: struct elf_image ei; */
+    /* Add For Cache MAP And ELF */
+    unw_word_t start_ip;
+    unw_word_t end_ip;
     unw_dyn_info_t di_cache;
     unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
 #if UNW_TARGET_IA64
@@ -315,11 +317,35 @@ struct elf_dyn_info
     unw_dyn_info_t di_arm;      /* additional table info for .ARM.exidx */
 #endif
   };
+#ifdef PARSE_BUILD_ID
+struct build_id_note {
+    ElfW(Nhdr) nhdr;
+    char name[4];
+    uint8_t build_id[0];
+};
+#endif
+struct elf_image
+  {
+    void *image;                /* pointer to mmap'd image */
+    size_t size;                /* (file-) size of the image */
+    int has_dyn_info;
+    struct elf_dyn_info elf_dyn_info;
+    int load_bias;
+    int load_offset;
+    char* strtab;
+#ifdef PARSE_BUILD_ID
+    struct build_id_note* build_id_note;
+#endif
+    struct elf_image* mdi;
+    int has_try_load;
+  };
 
 static inline void invalidate_edi (struct elf_dyn_info *edi)
 {
-  if (edi->ei.image)
-    munmap (edi->ei.image, edi->ei.size);
+  /* Add For Cache MAP And ELF*/
+  /* Removed: if (edi->ei.image) */
+  /*            munmap (edi->ei.image, edi->ei.size); */
+  /* Add For Cache MAP And ELF */
   memset (edi, 0, sizeof (*edi));
   edi->di_cache.format = -1;
   edi->di_debug.format = -1;
@@ -347,6 +373,10 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 #endif /* !PT_ARM_EXIDX */
 
 #include "tdep/libunwind_i.h"
+
+#ifndef TDEP_DWARF_SP
+#define TDEP_DWARF_SP UNW_TDEP_SP
+#endif
 
 #ifndef tdep_get_func_addr
 # define tdep_get_func_addr(as,addr,v)          (*(v) = addr, 0)

@@ -112,7 +112,7 @@ unw_step (unw_cursor_t *cursor)
 
       unw_word_t invalid_prev_rip = 0;
       unw_word_t prev_ip = c->dwarf.ip, prev_cfa = c->dwarf.cfa;
-      struct dwarf_loc rbp_loc, rsp_loc, rip_loc;
+      struct dwarf_loc rbp_loc = DWARF_NULL_LOC, rsp_loc = DWARF_NULL_LOC, rip_loc = DWARF_NULL_LOC;
 
       /* We could get here because of missing/bad unwind information.
          Validate all addresses before dereferencing. */
@@ -223,7 +223,7 @@ unw_step (unw_cursor_t *cursor)
                   Debug (2, "RIP fixup didn't work, falling back\n");
                   unw_word_t rbp1 = 0;
                   rbp_loc = DWARF_LOC(rbp, 0);
-                  rsp_loc = DWARF_NULL_LOC;
+                  rsp_loc = DWARF_VAL_LOC(c, rbp + 16);
                   rip_loc = DWARF_LOC (rbp + 8, 0);
                   ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
                   Debug (1, "[RBP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx\n",
@@ -253,7 +253,7 @@ unw_step (unw_cursor_t *cursor)
             }
           /* Mark all registers unsaved */
           for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-          c->dwarf.loc[i] = DWARF_NULL_LOC;
+            c->dwarf.loc[i] = DWARF_NULL_LOC;
 
           c->dwarf.loc[RBP] = rbp_loc;
           c->dwarf.loc[RSP] = rsp_loc;

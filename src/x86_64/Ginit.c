@@ -82,7 +82,7 @@ static int mem_validate_pipe[2] = {-1, -1};
 static inline void
 do_pipe2 (int pipefd[2])
 {
-  pipe2 (pipefd, O_CLOEXEC | O_NONBLOCK);
+  int result UNUSED = pipe2 (pipefd, O_CLOEXEC | O_NONBLOCK);
 }
 #else
 static inline void
@@ -418,6 +418,22 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.resume = x86_64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
+}
+
+HIDDEN void
+init_local_addr_space (unw_addr_space_t as)
+{
+  memset (as, 0, sizeof (struct unw_addr_space));
+  as->caching_policy = UNW_CACHE_GLOBAL;
+  as->acc.find_proc_info = dwarf_find_proc_info;
+  as->acc.put_unwind_info = put_unwind_info;
+  as->acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
+  as->acc.access_mem = access_mem;
+  as->acc.access_reg = access_reg;
+  as->acc.access_fpreg = access_fpreg;
+  as->acc.resume = x86_64_local_resume;
+  as->acc.get_proc_name = get_static_proc_name;
+  unw_flush_cache (as, 0, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */

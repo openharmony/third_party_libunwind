@@ -132,13 +132,31 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
   if (write)
     {
-      Debug (16, "mem[%x] <- %x\n", addr, *val);
-      *(unw_word_t *) addr = *val;
+#ifdef IS_VALIDATE_MEM
+      if (maps_is_writable(as->map_list, addr)) {
+#endif
+        Debug (16, "mem[%x] <- %x\n", addr, *val);
+        *(unw_word_t *) addr = *val;
+#ifdef IS_VALIDATE_MEM
+      } else {
+        Debug (16, "Unwritable memory mem[%lx] <- %lx\n", addr, *val);
+        return -1;
+      }
+#endif
     }
   else
     {
-      *val = *(unw_word_t *) addr;
-      Debug (16, "mem[%x] -> %x\n", addr, *val);
+#ifdef IS_VALIDATE_MEM
+      if (maps_is_readable(as->map_list, addr)) {
+#endif
+        *val = *(unw_word_t *) addr;
+        Debug (16, "mem[%x] -> %x\n", addr, *val);
+#ifdef IS_VALIDATE_MEM
+      } else {
+        Debug (16, "Unreadable memory mem[%lx] <- %lx\n", addr, *val);
+        return -1;
+      }
+#endif
     }
   return 0;
 }
@@ -219,7 +237,7 @@ HIDDEN void
 arm_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
-  local_addr_space.caching_policy = UNWI_DEFAULT_CACHING_POLICY;
+  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
   local_addr_space.acc.find_proc_info = arm_find_proc_info;
   local_addr_space.acc.put_unwind_info = arm_put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
@@ -229,6 +247,22 @@ arm_local_addr_space_init (void)
   local_addr_space.acc.resume = arm_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
+}
+
+HIDDEN void
+init_local_addr_space (unw_addr_space_t as)
+{
+  memset (as, 0, sizeof (struct unw_addr_space));
+  as->caching_policy = UNW_CACHE_GLOBAL;
+  as->acc.find_proc_info = arm_find_proc_info;
+  as->acc.put_unwind_info = arm_put_unwind_info;
+  as->acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
+  as->acc.access_mem = access_mem;
+  as->acc.access_reg = access_reg;
+  as->acc.access_fpreg = access_fpreg;
+  as->acc.resume = arm_local_resume;
+  as->acc.get_proc_name = get_static_proc_name;
+  unw_flush_cache (as, 0, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */

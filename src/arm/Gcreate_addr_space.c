@@ -47,7 +47,8 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
   memset (as, 0, sizeof (*as));
 
   as->acc = *a;
-
+  as->cursor = NULL;
+  as->pid = -1;
   /* Default to little-endian for ARM.  */
   if (byte_order == 0 || byte_order == UNW_LITTLE_ENDIAN)
     as->big_endian = 0;

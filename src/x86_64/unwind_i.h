@@ -63,7 +63,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 #define x86_64_r_uc_addr                UNW_OBJ(r_uc_addr)
 #define x86_64_sigreturn                UNW_OBJ(sigreturn)
-
 /* By-pass calls to access_mem() when known to be safe. */
 #ifdef UNW_LOCAL_ONLY
 # undef ACCESS_MEM_FAST
@@ -89,5 +88,6 @@ extern void *x86_64_r_uc_addr (ucontext_t *uc, int reg);
 extern NORETURN void x86_64_sigreturn (unw_cursor_t *cursor);
 #define x86_64_handle_signal_frame UNW_OBJ(handle_signal_frame)
 extern int x86_64_handle_signal_frame(unw_cursor_t *cursor);
+#define init_local_addr_space           UNW_OBJ(init_local_addr_space)
 
 #endif /* unwind_i_h */

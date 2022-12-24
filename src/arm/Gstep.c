@@ -30,6 +30,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <signal.h>
 
+#include "map_info.h"
+
 #define arm_exidx_step  UNW_OBJ(arm_exidx_step)
 
 static inline int
@@ -54,17 +56,22 @@ arm_exidx_step (struct cursor *c)
                                      c->dwarf.as_arg);
   if (ret == -UNW_ENOINFO)
     {
+#ifdef UNW_LOCAL_ONLY
+      if ((ret = arm_find_proc_info2 (c->dwarf.as, ip, &c->dwarf.pi,
+                                      1, c->dwarf.as_arg,
+                                      UNW_ARM_METHOD_EXIDX)) < 0)
+        return ret;
+#else
       if ((ret = tdep_find_proc_info (&c->dwarf, ip, 1)) < 0)
         return ret;
+#endif
     }
 
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
   ret = arm_exidx_extract (&c->dwarf, buf);
-  if (ret == -UNW_ESTOPUNWIND)
-    return 0;
-  else if (ret < 0)
+  if (ret < 0)
     return ret;
 
   ret = arm_exidx_decode (buf, ret, &c->dwarf);
@@ -73,7 +80,7 @@ arm_exidx_step (struct cursor *c)
 
   if (c->dwarf.ip == old_ip && c->dwarf.cfa == old_cfa)
     {
-      Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
+      Debug (1, "%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
                __FUNCTION__, (long) c->dwarf.ip);
       return -UNW_EBADFRAME;
     }
@@ -93,23 +100,7 @@ unw_step (unw_cursor_t *cursor)
 
   /* Check if this is a signal frame. */
   if (unw_is_signal_frame (cursor) > 0){
-      /* Open Harmony add for using lr backtrace when pc is zero */
       ret = arm_handle_signal_frame (cursor);
-      if ( c->dwarf.ip == 0x0 )
-      {
-          unw_word_t lr;
-          if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &lr) >= 0)
-          {
-              if (lr != c->dwarf.ip)
-              {
-                  Debug(1, "fix ip = 0 action \n");
-                  c->dwarf.ip = lr;
-                  return ret;
-              }
-          }
-      }
-      return ret;
-      /* Open Harmony add for using lr backtrace when pc is zero */
   }
 
 #ifdef CONFIG_DEBUG_FRAME
@@ -139,18 +130,24 @@ unw_step (unw_cursor_t *cursor)
              UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF) ? "dwarf_step() failed " : "",
              ret);
       ret = arm_exidx_step (c);
-      if (ret > 0)
-        return 1;
-      if (ret == -UNW_ESTOPUNWIND || ret == 0)
-        ret = -1; // try frame pointer
     }
 
+  if (ret < 0 && c->dwarf.index == 0) {
+    // same with aarch64
+    unw_word_t lr;
+    if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &lr) >= 0) {
+        if (lr != c->dwarf.ip) {
+            c->dwarf.ip = lr;
+            ret = 1;
+        }
+    }
+  }
   /* Fall back on APCS frame parsing.
      Note: This won't work in case the ARM EABI is used. */
 #ifdef __FreeBSD__
   if (0)
 #else
-  if (unlikely (ret < 0))
+  if (unlikely (ret < 0) && (c->dwarf.index < 3))
 #endif
     {
       if (UNW_TRY_METHOD(UNW_ARM_METHOD_FRAME))
@@ -203,13 +200,6 @@ unw_step (unw_cursor_t *cursor)
 #else
               ip_loc = DWARF_LOC(frame + 4, 0);
               fp_loc = DWARF_LOC(frame, 0);
-              if (dwarf_get(&c->dwarf, ip_loc, &c->dwarf.ip) < 0)
-                {
-                  return 0;
-                }
-              c->dwarf.loc[UNW_ARM_R12] = ip_loc;
-              c->dwarf.loc[UNW_ARM_R11] = fp_loc;
-              return 1;
 #endif
               if (dwarf_get(&c->dwarf, ip_loc, &c->dwarf.ip) < 0)
                 {
@@ -218,6 +208,7 @@ unw_step (unw_cursor_t *cursor)
               c->dwarf.loc[UNW_ARM_R12] = ip_loc;
               c->dwarf.loc[UNW_ARM_R11] = fp_loc;
               c->dwarf.pi_valid = 0;
+              ret = 1;
               Debug(15, "ip=%x\n", c->dwarf.ip);
             }
           else
@@ -226,5 +217,7 @@ unw_step (unw_cursor_t *cursor)
             }
         }
     }
+
+  c->dwarf.index++;
   return ret == -UNW_ENOINFO ? 0 : ret;
 }

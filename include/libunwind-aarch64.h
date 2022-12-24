@@ -37,11 +37,7 @@ extern "C" {
 #include <stdalign.h>
 
 #ifndef UNW_EMPTY_STRUCT
-#  ifdef __GNUC__
-#    define UNW_EMPTY_STRUCT
-#  else
-#    define UNW_EMPTY_STRUCT uint8_t unused;
-#  endif
+#  define UNW_EMPTY_STRUCT uint8_t unused;
 #endif
 
 #define UNW_TARGET      aarch64
@@ -59,7 +55,7 @@ extern "C" {
    cursor) + padding
 */
 
-#define UNW_TDEP_CURSOR_LEN     250
+#define UNW_TDEP_CURSOR_LEN     1024
 
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
@@ -168,7 +164,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_AARCH64_X30,
     UNW_TDEP_SP = UNW_AARCH64_SP,
-    UNW_TDEP_EH = UNW_AARCH64_X0,
+    UNW_TDEP_EH = UNW_AARCH64_X0
 
   }
 aarch64_regnum_t;
@@ -232,9 +228,11 @@ typedef ucontext_t unw_tdep_context_t;
 #include "libunwind-common.h"
 #include "libunwind-dynamic.h"
 
+#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
+
 #define unw_tdep_getcontext(uc) ({					\
   unw_tdep_context_t *unw_ctx = (uc);					\
-  register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs; \
+  UNW_BASE \
   __asm__ __volatile__ (					        \
      "stp x0, x1, [%[base], #0]\n" \
      "stp x2, x3, [%[base], #16]\n" \
@@ -243,7 +241,7 @@ typedef ucontext_t unw_tdep_context_t;
      "stp x8, x9, [%[base], #64]\n" \
      "stp x10, x11, [%[base], #80]\n" \
      "stp x12, x13, [%[base], #96]\n" \
-     "stp x14, x13, [%[base], #112]\n" \
+     "stp x14, x15, [%[base], #112]\n" \
      "stp x16, x17, [%[base], #128]\n" \
      "stp x18, x19, [%[base], #144]\n" \
      "stp x20, x21, [%[base], #160]\n" \

@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <sys/mman.h>
 
@@ -38,38 +39,85 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define PAGE_SIZE 4096
 #endif
 
+#ifndef NT_GNU_BUILD_ID
+#define NT_GNU_BUILD_ID 3
+#endif
+
+#ifndef ElfW
+#define ElfW(type) Elf_##type
+#endif
+
+#define ALIGN(val, align) (((val) + (align) - 1) & ~((align) - 1))
+
 int
-dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                         char *path, unw_word_t segbase, unw_word_t mapoff,
-                         unw_word_t ip)
+dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
+			 unw_addr_space_t as, char *path,
+			 unw_word_t segbase, unw_word_t mapoff, unw_word_t ip)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
-  unw_word_t max_load_addr = 0;
+  unw_word_t max_load_addr = (unw_word_t)(ei->image) + ei->size;
+  unw_word_t min_load_addr = (unw_word_t)(ei->image);
   unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
   unw_accessors_t *a;
   Elf_W(Ehdr) *ehdr;
+  int first_load_section = 0;
+  int first_load_offset = 0;
 #if UNW_TARGET_ARM
-  const Elf_W(Phdr) *parm_exidx = NULL;
+  const Elf_W(Phdr) *param_exidx = NULL;
 #endif
   int i, ret, found = 0;
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
-
-  if (!elf_w(valid_object) (&edi->ei))
+  if (!elf_w(valid_object) (ei))
     return -UNW_ENOINFO;
 
-  ehdr = edi->ei.image;
-  phdr = (Elf_W(Phdr) *) ((char *) edi->ei.image + ehdr->e_phoff);
+  if (path == NULL || strlen(path) > PAGE_SIZE || max_load_addr < min_load_addr) {
+      return -UNW_ENOINFO;
+  }
 
+  if (ei->has_dyn_info == 1 &&
+      ei->elf_dyn_info.start_ip <= ip &&
+      ei->elf_dyn_info.end_ip >= ip) {
+    *edi = ei->elf_dyn_info;
+    return 1; // found
+  }
+
+  ehdr = ei->image;
+  phdr = (Elf_W(Phdr) *) ((char *) ei->image + ehdr->e_phoff);
+  if (((unw_word_t)phdr) + sizeof(Elf_W(Phdr)) > max_load_addr ||
+      ((unw_word_t)phdr) + sizeof(Elf_W(Phdr)) < min_load_addr) {
+      return -UNW_ENOINFO;
+  }
+
+#ifdef PARSE_BUILD_ID
+  struct build_id_note* note;
+  int note_len;
+  size_t note_offset;
+#endif
+  unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
+      if (((unw_word_t)(&(phdr[i])) + sizeof(Elf_W(Phdr))) > max_load_addr ||
+          ((unw_word_t)(&(phdr[i])) + sizeof(Elf_W(Phdr))) < min_load_addr) {
+          break;
+      }
+
       switch (phdr[i].p_type)
         {
         case PT_LOAD:
+          if ((phdr[i].p_flags & PF_X) == 0) {
+            continue;
+          }
+
+          if (first_load_section == 0) {
+            ei->load_bias = phdr[i].p_vaddr - phdr[i].p_offset;
+            first_load_section = 1;
+          }
+
           if (phdr[i].p_vaddr < start_ip)
             start_ip = phdr[i].p_vaddr;
 
@@ -78,10 +126,16 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
           if ((phdr[i].p_offset & (-PAGE_SIZE)) == mapoff)
             ptxt = phdr + i;
-          if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
-            max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
-          break;
 
+          if (first_load_offset == 0) {
+            if ((phdr[i].p_offset & pagesize_alignment_mask) == mapoff) {
+              ei->load_offset = phdr[i].p_vaddr - (phdr[i].p_offset & (~pagesize_alignment_mask));
+              first_load_offset = 1;
+            } else {
+              ei->load_offset = 0;
+            }
+          }
+          break;
         case PT_GNU_EH_FRAME:
 #if defined __sun
         case PT_SUNW_UNWIND:
@@ -95,10 +149,42 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
 #if UNW_TARGET_ARM
         case PT_ARM_EXIDX:
-          parm_exidx = phdr + i;
+          param_exidx = phdr + i;
           break;
 #endif
+#ifdef PARSE_BUILD_ID
+        case PT_NOTE: {
+            note = (void *)(ei->image + phdr[i].p_offset);
+            note_len = phdr[i].p_filesz;
+            if (((unw_word_t)note + note_len) > max_load_addr ||
+                ((unw_word_t)note + note_len) < min_load_addr) {
+              Dprintf("Target Note Section is not valid:%s\n", path);
+              break;
+            }
 
+            while (note_len >= (int)(sizeof(struct build_id_note))) {
+                if (note->nhdr.n_type == NT_GNU_BUILD_ID &&
+                  note->nhdr.n_descsz != 0 &&
+                  note->nhdr.n_namesz == 4 &&
+                  memcmp(note->name, "GNU", 4) == 0) {
+                  ei->build_id_note = note;
+                  break;
+                }
+
+                note_offset = sizeof(ElfW(Nhdr)) +
+                  ALIGN(note->nhdr.n_namesz, 4) +
+                  ALIGN(note->nhdr.n_descsz, 4);
+                // 05 00 00 00 04 00 00 00 4f 48 4f 53 00 01 00 00 00 00 00 00
+                if (note->nhdr.n_type == 0x534f484f && note_len > 20) {
+                  // .note.ohos.ident is not a valid PT_NOTE section, use offset in section header later
+                  note_offset = 20;
+                }
+                note = (struct build_id_note*)((char *)note + note_offset);
+                note_len -= note_offset;
+            }
+          }
+          break;
+#endif
         default:
           break;
         }
@@ -118,16 +204,20 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
           /* For dynamicly linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
-                Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-                                                 + (char *) edi->ei.image);
-          for (; dyn->d_tag != DT_NULL; ++dyn)
-            if (dyn->d_tag == DT_PLTGOT)
-              {
-                /* Assume that _DYNAMIC is writable and GLIBC has
-                   relocated it (true for x86 at least).  */
-                edi->di_cache.gp = dyn->d_un.d_ptr;
-                break;
+          Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset + (char *) ei->image);
+          for (; dyn->d_tag != DT_NULL; ++dyn) {
+              if (((unw_word_t)dyn + sizeof(Elf_W(Dyn))) > max_load_addr ||
+                  ((unw_word_t)dyn + sizeof(Elf_W(Dyn))) < min_load_addr) {
+                  break;
               }
+
+              if (dyn->d_tag == DT_PLTGOT) {
+                  /* Assume that _DYNAMIC is writable and GLIBC has
+                    relocated it (true for x86 at least).  */
+                  edi->di_cache.gp = dyn->d_un.d_ptr;
+                  break;
+              }
+          }
         }
       else
         /* Otherwise this is a static executable with no _DYNAMIC.  Assume
@@ -136,11 +226,17 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
         edi->di_cache.gp = 0;
 
       hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
-                                           + (char *) edi->ei.image);
+					   + (char *) ei->image);
+      if (((unw_word_t)hdr + sizeof(struct dwarf_eh_frame_hdr)) > max_load_addr ||
+          ((unw_word_t)hdr + sizeof(struct dwarf_eh_frame_hdr)) < min_load_addr) {
+          return -UNW_ENOINFO;
+      }
+
       if (hdr->version != DW_EH_VERSION)
         {
-          Debug (1, "table `%s' has unexpected version %d\n",
-                 path, hdr->version);
+          if (path != NULL) {
+            Debug (1, "table `%s' has unexpected version %d\n", path, hdr->version);
+          }
           return -UNW_ENOINFO;
         }
 
@@ -168,9 +264,9 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
       if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
         {
-    #if 1
+    #if 0
           abort ();
-    #else
+
           unw_word_t eh_frame_end;
 
           /* If there is no search table or it has an unsupported
@@ -202,27 +298,28 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
       /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
       edi->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
       edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
-                                       + (addr - to_unw_word (edi->ei.image)
+				       + (addr - (unw_word_t) ei->image
                                           - peh_hdr->p_offset));
 
       /* For the binary-search table in the eh_frame_hdr, data-relative
          means relative to the start of that section... */
+      /* Add For Cache MAP And ELF */
       edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
-                                    + (to_unw_word (hdr) -
-                                       to_unw_word (edi->ei.image)
-                                       - peh_hdr->p_offset));
+				    + ((unw_word_t) hdr - (unw_word_t) ei->image
+				       - peh_hdr->p_offset));
+      /* Add For Cache MAP And ELF */
       found = 1;
     }
 
 #if UNW_TARGET_ARM
-  if (parm_exidx)
+  if (param_exidx)
     {
       edi->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
       edi->di_arm.start_ip = start_ip;
       edi->di_arm.end_ip = end_ip;
       edi->di_arm.u.rti.name_ptr = to_unw_word (path);
-      edi->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
-      edi->di_arm.u.rti.table_len = parm_exidx->p_memsz;
+      edi->di_arm.u.rti.table_data = load_base + param_exidx->p_vaddr;
+      edi->di_arm.u.rti.table_len = param_exidx->p_memsz;
       found = 1;
     }
 #endif
@@ -232,6 +329,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
   found = dwarf_find_debug_frame (found, &edi->di_debug, ip, load_base, path,
                                   start_ip, end_ip);
 #endif
-
+  if (found == 1) {
+    edi->start_ip = start_ip;
+    edi->end_ip = end_ip;
+    ei->elf_dyn_info = *edi;
+    ei->has_dyn_info = 1;
+  }
   return found;
 }

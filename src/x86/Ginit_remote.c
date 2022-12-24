@@ -41,6 +41,9 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 
   c->dwarf.as = as;
   c->dwarf.as_arg = as_arg;
+  c->dwarf.cached_map = NULL;
+  c->dwarf.rel_pc = 0;
+  c->dwarf.reg_sz = 0;
   if (as == unw_local_addr_space)
     {
       c->dwarf.as_arg = c;
