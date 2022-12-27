@@ -33,10 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
-
+#ifndef NO_RESERVE_CACHE
 static struct unw_addr_space local_addr_space;
 
 unw_addr_space_t unw_local_addr_space = &local_addr_space;
+#else
+unw_addr_space_t unw_local_addr_space;
+#endif
 
 static inline void *
 uc_addr (unw_tdep_context_t *uc, int reg)
@@ -236,8 +239,9 @@ get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
 HIDDEN void
 arm_local_addr_space_init (void)
 {
+#ifndef NO_RESERVE_CACHE
   memset (&local_addr_space, 0, sizeof (local_addr_space));
-  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.caching_policy = UNW_CACHE_NONE;
   local_addr_space.acc.find_proc_info = arm_find_proc_info;
   local_addr_space.acc.put_unwind_info = arm_put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
@@ -247,13 +251,14 @@ arm_local_addr_space_init (void)
   local_addr_space.acc.resume = arm_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
+#endif
 }
 
 HIDDEN void
 init_local_addr_space (unw_addr_space_t as)
 {
   memset (as, 0, sizeof (struct unw_addr_space));
-  as->caching_policy = UNW_CACHE_GLOBAL;
+  as->caching_policy = UNW_CACHE_NONE;
   as->acc.find_proc_info = arm_find_proc_info;
   as->acc.put_unwind_info = arm_put_unwind_info;
   as->acc.get_dyn_info_list_addr = get_dyn_info_list_addr;

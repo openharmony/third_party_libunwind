@@ -1,0 +1,76 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+arm64_source_local = [
+  "src/aarch64/Lcreate_addr_space.c",
+  "src/aarch64/Lget_proc_info.c",
+  "src/aarch64/Lget_save_loc.c",
+  "src/aarch64/Lglobal.c",
+  "src/aarch64/Linit.c",
+  "src/aarch64/Linit_local.c",
+  "src/aarch64/Linit_remote.c",
+  "src/aarch64/Lis_signal_frame.c",
+  "src/aarch64/Lregs.c",
+  "src/aarch64/Lresume.c",
+  "src/aarch64/Lstash_frame.c",
+  "src/aarch64/Lstep.c",
+  "src/aarch64/Ltrace.c",
+]
+
+arm_source_local = [
+  "src/arm/Lcreate_addr_space.c",
+  "src/arm/Lex_tables.c",
+  "src/arm/Lget_proc_info.c",
+  "src/arm/Lget_save_loc.c",
+  "src/arm/Lglobal.c",
+  "src/arm/Linit.c",
+  "src/arm/Linit_local.c",
+  "src/arm/Linit_remote.c",
+  "src/arm/Los-linux.c",
+  "src/arm/Lregs.c",
+  "src/arm/Lresume.c",
+  "src/arm/Lstash_frame.c",
+  "src/arm/Lstep.c",
+  "src/arm/Ltrace.c",
+]
+
+x64_source_local = [
+  "src/x86_64/Lcreate_addr_space.c",
+  "src/x86_64/Lget_proc_info.c",
+  "src/x86_64/Lget_save_loc.c",
+  "src/x86_64/Lglobal.c",
+  "src/x86_64/Linit.c",
+  "src/x86_64/Linit_local.c",
+  "src/x86_64/Linit_remote.c",
+  "src/x86_64/Los-linux.c",
+  "src/x86_64/Lregs.c",
+  "src/x86_64/Lresume.c",
+  "src/x86_64/Lstash_frame.c",
+  "src/x86_64/Lstep.c",
+  "src/x86_64/Ltrace.c",
+]
+
+libunwind_la_SOURCES_local = [
+  "src/mi/Ldyn-extract.c",
+  "src/mi/Lfind_dynamic_proc_info.c",
+  "src/mi/Lget_proc_info_by_ip.c",
+  "src/mi/Lget_proc_name.c",
+  "src/mi/Lput_dynamic_unwind_info.c",
+  "src/mi/Ldestroy_addr_space.c",
+  "src/mi/Lget_reg.c",
+  "src/mi/Lset_reg.c",
+  "src/mi/Lget_fpreg.c",
+  "src/mi/Lset_fpreg.c",
+  "src/mi/Lset_caching_policy.c",
+  "src/mi/Lset_cache_size.c",
+]

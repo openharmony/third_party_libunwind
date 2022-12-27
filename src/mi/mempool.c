@@ -40,14 +40,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
                          n < 16 ? 16 : n)
 # define MAX_ALIGN      MAX_ALIGN_(sizeof (long double))
 #endif
-
+#ifndef NO_RESERVE_CACHE
 static alignas(MAX_ALIGN) char sos_memory[SOS_MEMORY_SIZE];
 static _Atomic size_t sos_memory_freepos = 0;
+#endif
 static size_t pg_size;
 
 HIDDEN void *
 sos_alloc (size_t size)
 {
+  Dprintf("sos_alloc %zu\n", size);
+#ifndef NO_RESERVE_CACHE
   size_t pos;
 
   size = UNW_ALIGN(size, MAX_ALIGN);
@@ -61,6 +64,9 @@ sos_alloc (size_t size)
   assert ((pos+size) <= SOS_MEMORY_SIZE);
 
   return &sos_memory[pos];
+#else
+  return NULL;
+#endif
 }
 
 /* Must be called while holding the mempool lock. */
