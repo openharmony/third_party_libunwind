@@ -60,6 +60,7 @@ unw_init_local_common (unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_i
 int 
 unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t *uc)
 {
+  struct cursor *c = (struct cursor *) cursor;
   if (unlikely (!atomic_load(&tdep_init_done)))
     tdep_init ();
 
