@@ -28,11 +28,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include "compiler.h"
 #include "libunwind_i.h"
 #include "map_info.h"
 #include "os-linux.h"
 
-struct map_info *
+HIDDEN struct map_info *
 maps_create_list(pid_t pid)
 {
   struct map_iterator mi;
@@ -90,7 +91,7 @@ maps_create_list(pid_t pid)
   return map_list;
 }
 
-void
+HIDDEN void
 maps_destroy_list(struct map_info *map_info)
 {
   struct map_info *map;
@@ -122,7 +123,7 @@ maps_destroy_list(struct map_info *map_info)
   }
 }
 
-struct map_info *
+HIDDEN struct map_info *
 get_map(struct map_info *map_list, unw_word_t addr)
 {
   if (map_list == NULL) {
@@ -155,7 +156,8 @@ get_map(struct map_info *map_list, unw_word_t addr)
   return NULL;
 }
 
-int maps_is_readable(struct map_info *map_list, unw_word_t addr)
+HIDDEN int
+maps_is_readable(struct map_info *map_list, unw_word_t addr)
 {
 #ifndef UNW_LOCAL_ONLY
   if (map_list == NULL)
@@ -167,7 +169,8 @@ int maps_is_readable(struct map_info *map_list, unw_word_t addr)
   return 0;
 }
 
-int maps_is_writable(struct map_info *map_list, unw_word_t addr)
+HIDDEN int
+maps_is_writable(struct map_info *map_list, unw_word_t addr)
 {
 #ifndef UNW_LOCAL_ONLY
   if (map_list == NULL)
@@ -179,7 +182,7 @@ int maps_is_writable(struct map_info *map_list, unw_word_t addr)
   return 0;
 }
 
-struct map_info*
+HIDDEN struct map_info*
 tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
 {
   struct map_info *map;
