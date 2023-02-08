@@ -15,8 +15,8 @@ if (defined(ohos_lite)) {
   import("//build/lite/config/component/lite_component.gni")
 } else {
   import("//build/ohos.gni")
-  import("//third_party/libunwind/libunwind.gni")
 }
+import("//third_party/libunwind/libunwind.gni")
 
 common_source = [
   "src/dwarf/Gexpr.c",
@@ -294,6 +294,10 @@ config("unwind_config_remote") {
       [ "-Wno-format" ]  # some debug feature will warning in host x64 build
 }
 
+config("unwind_config_local_only") {
+  defines = [ "UNW_LOCAL_ONLY" ]
+}
+
 config("unwind_config_remote_public") {
   cflags = []
   include_dirs = []
@@ -428,6 +432,43 @@ if (defined(ohos_lite)) {
     deps = [ ":unwind_source" ]
     public_configs = [ ":unwind_config_public" ]
   }
+
+  static_library("libunwind_local") {
+    sources = common_source
+    public_configs = [ ":unwind_config_public" ]
+    public_configs += [ ":unwind_config_local_only" ]
+
+    if (target_cpu == "arm") {
+      sources += arm_source
+      sources -= arm_source_local
+      public_configs += [ ":unwind_config_arm" ]
+    } else if (target_cpu == "arm64") {
+      sources += arm64_source
+      sources -= arm64_source_local
+      public_configs += [ ":unwind_config_arm64" ]
+    } else if (target_cpu == "x64") {
+      sources += x64_source
+      sources -= x64_source_local
+      public_configs += [ ":unwind_config_x64" ]
+    } else if (target_cpu == "x86_64") {
+      sources += x64_source
+      sources -= x64_source_local
+      public_configs += [ ":unwind_config_x86_64" ]
+    }
+
+    sources += [ "src/os-ohos.c" ]
+    sources -= libunwind_dwarf_local_la_SOURCES
+    sources -= libunwind_la_SOURCES_local
+    sources -= ptrace_sources
+
+    cflags = [
+      "-DHAS_ARK_FRAME",
+      "-DPARSE_BUILD_ID",
+      "-DIS_VALIDATE_MEM",
+      "-DUNW_LOCAL_ONLY",
+      "-DNO_RESERVE_CACHE",
+    ]
+  }
 } else {
   ohos_source_set("unwind_source_arm") {
     configs = [ ":unwind_config_remote" ]
@@ -535,10 +576,6 @@ if (defined(ohos_lite)) {
     public_configs = [ ":unwind_config_public" ]
     part_name = "faultloggerd"
     subsystem_name = "hiviewdfx"
-  }
-
-  config("unwind_config_local_only") {
-    defines = [ "UNW_LOCAL_ONLY" ]
   }
 
   ohos_static_library("libunwind_local") {
