@@ -205,7 +205,7 @@ unw_is_ark_managed_frame(struct cursor* c)
     return false;
   }
 
-  if ((strstr(map->path, "[anon:ArkJS Heap]") == NULL) &&
+  if ((strstr(map->path, "[anon:ArkTS Code]") == NULL) &&
       (strstr(map->path, "/dev/zero") == NULL)) {
     Dprintf("Not ark map:%s.\n", map->path);
     return false;

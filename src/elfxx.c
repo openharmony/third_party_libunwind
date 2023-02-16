@@ -210,7 +210,7 @@ elf_w (find_symbol_info_in_image) (struct elf_image *ei,
                     val += load_offset;
                   start = (uint64_t)val;
                   end = start + (uint64_t)sym->st_size;
-                  if (pc >= start && pc <= end) {
+                  if (pc >= start && pc < end) {
                     strncpy (buf, strtab + sym->st_name, buf_sz);
                     buf[buf_sz - 1] = '\0';
                     *sym_start = start;

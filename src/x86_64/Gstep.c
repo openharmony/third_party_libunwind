@@ -211,7 +211,7 @@ unw_step (unw_cursor_t *cursor)
                         else
                           Debug (2, "new_ip 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != 0\n", new_ip);
                       }
-		                else
+                    else
                         Debug (2, "rsp 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) != 0\n", rsp);
                   }
               /*
