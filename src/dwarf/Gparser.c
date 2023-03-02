@@ -849,10 +849,16 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
       cfa = DWARF_GET_LOC (cfa_loc);
     }
 
+#ifdef ONLY_RECOVER_GENERAL_REGS
+const int32_t regCount = 33;
+#else
+const int32_t regCount = DWARF_NUM_PRESERVED_REGS;
+#endif
+
   dwarf_loc_t new_loc[DWARF_NUM_PRESERVED_REGS];
   memcpy(new_loc, c->loc, sizeof(new_loc));
 
-  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+  for (i = 0; i < regCount; ++i)
     {
       switch ((dwarf_where_t) rs->reg.where[i])
         {
