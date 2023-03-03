@@ -337,6 +337,10 @@ config("unwind_config_arm64") {
   defines = [ "UNW_TARGET_ARM64" ]
 }
 
+config("unwind_config_arm64_opt") {
+  defines = [ "ONLY_RECOVER_GENERAL_REGS" ]
+}
+
 config("unwind_config_x64") {
   defines = [ "UNW_TARGET_X86_64" ]
   defines += [ "UNW_TARGET_X86_64_LINUX" ]
@@ -494,6 +498,22 @@ if (defined(ohos_lite)) {
       ":unwind_config_public",
       ":unwind_config_remote_public",
       ":unwind_config_arm64",
+    ]
+    sources = common_source
+
+    arm64_source -= [ "src/aarch64/getcontext.S" ]
+
+    sources += arm64_source
+    sources -= remove_sources
+  }
+
+  ohos_source_set("unwind_source_arm64_opt") {
+    configs = [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm64",
+      ":unwind_config_arm64_opt",
     ]
     sources = common_source
 
