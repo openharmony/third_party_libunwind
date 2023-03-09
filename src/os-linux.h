@@ -95,7 +95,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
     memcpy (cp, "/maps", 6);
   }
 
-  mi->fd = open (path, O_RDONLY);
+  mi->fd = UNW_TEMP_FAILURE_RETRY (open (path, O_RDONLY));
   if (mi->fd >= 0)
     {
       /* Try to allocate a page-sized buffer.  */

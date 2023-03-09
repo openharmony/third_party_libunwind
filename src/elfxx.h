@@ -86,7 +86,7 @@ elf_map_image (struct elf_image *ei, const char *path)
   struct stat stat;
   int fd;
 
-  fd = open (path, O_RDONLY);
+  fd = UNW_TEMP_FAILURE_RETRY (open (path, O_RDONLY));
   if (fd < 0)
     return -1;
 
