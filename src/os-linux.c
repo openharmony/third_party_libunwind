@@ -200,7 +200,7 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
       return NULL;
     }
   }
-    
+
 
   map = get_map(as->map_list, ip);
   if (!map)

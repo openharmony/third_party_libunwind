@@ -121,6 +121,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # endif
 #endif
 
+#define UNW_TEMP_FAILURE_RETRY(exp)             \
+    ({                                          \
+    long int _rc;                               \
+    do {                                        \
+        _rc = (long int)(exp);                  \
+    } while ((_rc == -1) && (errno == EINTR));  \
+    _rc;                                        \
+    })
+
 static inline int
 byte_order_is_valid(int byte_order)
 {
