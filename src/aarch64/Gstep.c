@@ -177,8 +177,10 @@ unw_step (unw_cursor_t *cursor)
   /* Restore default memory validation state */
   c->validate = validate;
 
+  ret = dwarf_step (&c->dwarf);
+  saved_ret = ret;
 #ifdef HAS_ARK_FRAME
-  if (unw_is_ark_managed_frame(c)) {
+  if (ret < 0 && unw_is_ark_managed_frame(c)) {
     dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.fp);
     char buf[128] = {0};
     ret = unw_step_ark_managed_native_frame(c->dwarf.as->pid,
@@ -190,9 +192,6 @@ unw_step (unw_cursor_t *cursor)
     }
   }
 #endif
-
-  ret = dwarf_step (&c->dwarf);
-  saved_ret = ret;
   if (ret < 0 && c->dwarf.index == 0)
     {
       /* IP points to non-mapped memory. */
