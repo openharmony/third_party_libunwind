@@ -165,7 +165,7 @@ maps_is_readable(struct map_info *map_list, unw_word_t addr)
 #endif
   struct map_info *map = get_map(map_list, addr);
   if (map != NULL)
-    return ((map->flags & PROT_READ) && (addr <= (map->end - sizeof(unw_word_t))));
+    return map->flags & PROT_READ;
   return 0;
 }
 
@@ -178,7 +178,7 @@ maps_is_writable(struct map_info *map_list, unw_word_t addr)
 #endif
   struct map_info *map = get_map(map_list, addr);
   if (map != NULL)
-    return ((map->flags & PROT_WRITE) && (addr <= (map->end - sizeof(unw_word_t))));
+    return map->flags & PROT_WRITE;
   return 0;
 }
 

@@ -468,7 +468,6 @@ if (defined(ohos_lite)) {
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
-      "-DIS_VALIDATE_MEM",
       "-DUNW_LOCAL_ONLY",
       "-DNO_RESERVE_CACHE",
     ]
@@ -583,7 +582,6 @@ if (defined(ohos_lite)) {
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
-      "-DIS_VALIDATE_MEM",
     ]
   }
 
@@ -629,9 +627,9 @@ if (defined(ohos_lite)) {
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
-      "-DIS_VALIDATE_MEM",
       "-DUNW_LOCAL_ONLY",
       "-DNO_RESERVE_CACHE",
+      "-DHAVE_PIPE2",
     ]
 
     part_name = "faultloggerd"

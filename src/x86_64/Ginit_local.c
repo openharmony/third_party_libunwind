@@ -50,7 +50,7 @@ unw_init_local_common (unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_i
   Debug (1, "(cursor=%p)\n", c);
 
   c->dwarf.as = unw_local_addr_space;
-  c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 0);
+  c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 1);
   c->dwarf.cached_map = NULL;
   c->dwarf.rel_pc = 0;
   c->dwarf.reg_sz = 0;
@@ -67,7 +67,7 @@ unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t 
   Debug (1, "(cursor=%p)\n", c);
   unw_local_addr_space = as;
   c->dwarf.as = as;
-  c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 0);
+  c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 1);
   c->dwarf.cached_map = NULL;
   c->dwarf.rel_pc = 0;
   c->dwarf.reg_sz = 0;
