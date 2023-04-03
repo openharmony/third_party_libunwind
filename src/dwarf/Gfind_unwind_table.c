@@ -205,18 +205,15 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
           Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset + (char *) ei->image);
-          for (; dyn->d_tag != DT_NULL; ++dyn) {
-              if (((unw_word_t)dyn + sizeof(Elf_W(Dyn))) > max_load_addr ||
-                  ((unw_word_t)dyn + sizeof(Elf_W(Dyn))) < min_load_addr) {
-                  break;
-              }
-
+          while (((unw_word_t)dyn + sizeof(Elf_W(Dyn))) <= max_load_addr &&
+                 ((unw_word_t)dyn + sizeof(Elf_W(Dyn))) >= min_load_addr && dyn->d_tag != DT_NULL) {
               if (dyn->d_tag == DT_PLTGOT) {
                   /* Assume that _DYNAMIC is writable and GLIBC has
                     relocated it (true for x86 at least).  */
                   edi->di_cache.gp = dyn->d_un.d_ptr;
                   break;
               }
+              ++dyn;
           }
         }
       else
