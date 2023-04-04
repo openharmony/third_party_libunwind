@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
 #include <stdatomic.h>
 
 #include "unwind_i.h"
@@ -139,6 +140,11 @@ open_pipe (void)
 
 ALWAYS_INLINE
 static int
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+__attribute__((no_sanitize("address")))
+#endif
+#endif
 write_validate (void *addr)
 {
   int ret = -1;
@@ -147,7 +153,7 @@ write_validate (void *addr)
   do
     {
       char buf;
-      bytes = read (mem_validate_pipe[0], &buf, 1);
+      bytes = syscall(SYS_read, mem_validate_pipe[0], &buf, 1);
     }
   while ( errno == EINTR );
 
@@ -160,7 +166,7 @@ write_validate (void *addr)
 
   do
     {
-       ret = write (mem_validate_pipe[1], addr, 1);
+       ret = syscall(SYS_write, mem_validate_pipe[1], addr, 1);
     }
   while ( errno == EINTR );
 
