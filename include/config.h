@@ -136,7 +136,7 @@ fi
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mincore' function. */
-#define HAVE_MINCORE 1
+/* #undef HAVE_MINCORE */
 
 /* Define to 1 if you have the <signal.h> header file. */
 #define HAVE_SIGNAL_H 1

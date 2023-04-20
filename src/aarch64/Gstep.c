@@ -188,7 +188,6 @@ unw_step (unw_cursor_t *cursor)
     if (ret > 0) {
       c->dwarf.loc[UNW_AARCH64_X29] = DWARF_LOC(c->dwarf.fp, 0);
       c->dwarf.loc[UNW_AARCH64_PC] = DWARF_LOC(c->dwarf.fp + 8, 0);
-      return ret;
     }
   }
 #endif
@@ -202,7 +201,7 @@ unw_step (unw_cursor_t *cursor)
       ret = 1;
     }
 
-  if (unlikely (ret < 0) && (c->dwarf.index < 3))
+  if (unlikely (ret < 0))
     {
       /* DWARF failed. */
       if (is_plt_entry (&c->dwarf))
