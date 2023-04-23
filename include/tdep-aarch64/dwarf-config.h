@@ -31,10 +31,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    gcc/config/aarch64/aarch64.h:DWARF_FRAME_REGISTERS.  */
 #define DWARF_NUM_PRESERVED_REGS        97
 
+#define DWARF_UNW_AARCH64_V31    95
+
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
 #define dwarf_is_big_endian(addr_space) 0
 
-#define dwarf_to_unw_regnum(reg) (((reg) <= UNW_AARCH64_V31) ? (reg) : 0)
+#define dwarf_to_unw_regnum(reg) (((reg) <= DWARF_UNW_AARCH64_V31) ? (reg) : 0)
 
 /* Convert a pointer to a dwarf_cursor structure to a pointer to
    unw_cursor_t.  */
