@@ -159,7 +159,7 @@ unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int validate = c->validate;
-  int ret, saved_ret;
+  int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx))\n",
          c, c->dwarf.ip, c->dwarf.cfa);
@@ -178,7 +178,6 @@ unw_step (unw_cursor_t *cursor)
   c->validate = validate;
 
   ret = dwarf_step (&c->dwarf);
-  saved_ret = ret;
 #ifdef HAS_ARK_FRAME
   if (ret < 0 && unw_is_ark_managed_frame(c)) {
     dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.fp);
@@ -230,7 +229,7 @@ unw_step (unw_cursor_t *cursor)
           else
             c->dwarf.ip = 0;
         }
-      else
+      else if (c->dwarf.index < 10)
         {
           Debug (2, "fallback\n");
           c->frame_info.frame_type = UNW_AARCH64_FRAME_GUESSED;
@@ -239,9 +238,6 @@ unw_step (unw_cursor_t *cursor)
     }
 
   c->dwarf.index++;
-  if (unlikely (saved_ret == -UNW_ESTOPUNWIND))
-    return 0;
-
   if (ret > 0)
     return ret;
 
