@@ -280,6 +280,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 #define tdep_getcontext_trace           unw_getcontext
 #define tdep_init_done                  UNW_OBJ(init_done)
+#define tdep_init_mem_validate          UNW_OBJ(init_mem_validate)
 #define tdep_init                       UNW_OBJ(init)
 #define arm_find_proc_info              UNW_OBJ(find_proc_info)
 #define arm_find_proc_info2             UNW_OBJ(find_proc_info2)
@@ -321,6 +322,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 extern atomic_bool tdep_init_done;
 
 extern void tdep_init (void);
+extern void tdep_init_mem_validate (void);
 extern int arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                                unw_proc_info_t *pi, int need_unwind_info,
                                void *arg);
