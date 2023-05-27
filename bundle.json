@@ -10,8 +10,8 @@
     "dirs": {},
     "scripts": {},
     "component": {
-        "name": "thirdparty_libunwind",
-        "subsystem": "",
+        "name": "libunwind",
+        "subsystem": "thirdparty",
         "syscap": [],
         "features": [],
         "adapted_system_type": [],
