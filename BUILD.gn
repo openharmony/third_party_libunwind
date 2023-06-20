@@ -592,6 +592,10 @@ if (defined(ohos_lite)) {
       "updater",
     ]
     public_configs = [ ":unwind_config_public" ]
+    innerapi_tags = [
+      "platformsdk",
+      "chipsetsdk",
+    ]
     subsystem_name = "thirdparty"
     part_name = "libunwind"
   }
