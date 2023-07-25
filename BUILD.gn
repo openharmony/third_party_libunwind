@@ -582,6 +582,7 @@ if (defined(ohos_lite)) {
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
+      "-DPARSE_ELF_IN_HAP",
     ]
   }
 

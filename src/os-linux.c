@@ -29,6 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/stat.h>
 
 #include "compiler.h"
+#include "elfxx.h"
 #include "libunwind_i.h"
 #include "map_info.h"
 #include "os-linux.h"
@@ -75,6 +76,7 @@ maps_create_list(pid_t pid)
       cur_map->ei.has_dyn_info = 0;
       cur_map->ei.load_bias = -1;
       cur_map->ei.strtab = NULL;
+      cur_map->ei.lib_name_offset = 0;
       cur_map->sz = sz;
       cur_map->buf = buf;
       cur_map->buf_sz = buf_sz;
@@ -169,6 +171,64 @@ maps_is_readable(struct map_info *map_list, unw_word_t addr)
   return 0;
 }
 
+#ifdef PARSE_ELF_IN_HAP
+static int map_elf_in_hap(struct map_info *map)
+{
+  // elf header is in the first mmap area
+  // c3840000-c38a6000 r--p 00174000 /data/storage/el1/bundle/entry.hap <- program header
+  // c38a6000-c3945000 r-xp 001d9000 /data/storage/el1/bundle/entry.hap <- pc is in this region
+  // c3945000-c394b000 r--p 00277000 /data/storage/el1/bundle/entry.hap
+  // c394b000-c394c000 rw-p 0027c000 /data/storage/el1/bundle/entry.hap
+  if (map->next == NULL) {
+    Dprintf("no prev map exist.\n");
+    return -1;
+  }
+
+  struct map_info* prev = map->next;
+  struct stat stat;
+  int fd;
+  fd = UNW_TEMP_FAILURE_RETRY (open (map->path, O_RDONLY));
+  if (fd < 0) {
+    Dprintf("failed to open hap file.(%d)\n", errno);
+    return -1;
+  }
+
+  if (fstat (fd, &stat) < 0) {
+    Dprintf("failed to stat hap file sz.(%d)\n", errno);
+    close (fd);
+    return -1;
+  }
+
+  size_t size = prev->end - prev->start;
+  void* elf = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, prev->offset);
+  if (elf == MAP_FAILED) {
+    Dprintf("failed to map program header in hap.(%d)\n", errno);
+    close (fd);
+    return -1;
+  }
+
+  map->ei.size = calc_elf_file_size(elf, size);
+  // maybe we should get it from phdr.
+  map->offset = map->offset - prev->offset;
+  munmap(elf, size);
+  if (map->ei.size <= 0 || map->ei.size > (size_t)(stat.st_size - prev->offset))
+  {
+    Dprintf("invalid elf size? sz:%d, hap sz:%d", (int)map->ei.size, (int)stat.st_size);
+    close (fd);
+    return -1;
+  }
+
+  map->ei.image = mmap (NULL, map->ei.size, PROT_READ, MAP_PRIVATE, fd, prev->offset);
+  close (fd);
+  if (map->ei.image == MAP_FAILED) {
+    Dprintf("failed to map so in hap.\n");
+    return -1;
+  }
+
+  return 0;
+}
+#endif
+
 HIDDEN int
 maps_is_writable(struct map_info *map_list, unw_word_t addr)
 {
@@ -201,21 +261,30 @@ tdep_get_elf_image(unw_addr_space_t as, pid_t pid, unw_word_t ip)
     }
   }
 
-
-  map = get_map(as->map_list, ip);
+  map = get_map(as->map_list, ip); // ip must located in executable map region
   if (!map)
     return NULL;
 
   if (map->ei.image == NULL)
     {
-      int ret = elf_map_image(&map->ei, map->path);
-      if (ret < 0)
-        {
-          map->ei.image = NULL;
-          map->ei.has_try_load = 1;
-          Dprintf("Failed to elf_map_image for ip:%p\n", (void*)ip);
+      if (strstr(map->path, ".hap") != NULL) {
+#ifdef PARSE_ELF_IN_HAP
+        if (map_elf_in_hap(map) < 0) {
+          Dprintf("invalid map_elf_in_hap?\n");
           return NULL;
         }
+#else
+        Dprintf("Unsupport map_elf_in_hap\n");
+        return NULL;
+#endif
+      } else {
+        if (elf_map_image(&map->ei, map->path) < 0) {
+            map->ei.image = NULL;
+            map->ei.has_try_load = 1;
+            Dprintf("Failed to elf_map_image for ip:%p\n", (void*)ip);
+            return NULL;
+          }
+      }
       map->ei.mdi = &(map->mdi);
     }
 

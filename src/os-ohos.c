@@ -29,7 +29,7 @@ extern unw_word_t get_previous_instr_sz(unw_cursor_t *cursor);
 extern void unw_init_local_addr_space (unw_addr_space_t as);
 extern struct map_info *get_map(struct map_info *map_list, unw_word_t addr);
 
-void 
+void
 unw_set_target_pid(unw_addr_space_t as, int pid)
 {
   as->pid = pid;
@@ -311,4 +311,31 @@ unw_get_build_id (struct map_info* map, uint8_t** build_id_ptr, size_t* length)
 #else
   return false;
 #endif
+}
+
+int
+unw_get_library_name_by_map(struct map_info* map, char *buf, int buf_sz)
+{
+  if (map == NULL || buf == NULL) {
+    Dprintf("Invaild map_info or buffer.\n");
+    return -1;
+  }
+
+  if (map->ei.image == NULL || map->ei.lib_name_offset == 0) {
+    Dprintf("Invaild elf_image or lib_name_offset.\n");
+    return -1;
+  }
+
+  if (map->ei.strtab == NULL) {
+    Dprintf("Invaild str_tab.\n");
+    return -1;
+  }
+
+  if (strlen(map->ei.strtab + map->ei.lib_name_offset) > 1024) {
+    Dprintf("Invaild library name.\n");
+    return -1;
+  }
+
+  strncpy (buf, map->ei.strtab + map->ei.lib_name_offset, buf_sz);
+  return 0;
 }

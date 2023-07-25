@@ -198,6 +198,10 @@ elf_w (find_symbol_info_in_image) (struct elf_image *ei,
             break;
           }
 
+          if (!ei->strtab) {
+            ei->strtab = strtab;
+          }
+
           for (sym = symtab;
                sym < symtab_end;
                sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
@@ -223,7 +227,7 @@ elf_w (find_symbol_info_in_image) (struct elf_image *ei,
 
         default:
           break;
-        } 
+        }
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
   return ret;
@@ -563,7 +567,7 @@ int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
   int ret = elf_w (find_symbol_info_in_image) (ei, load_offset, pc, buf_sz, buf, sym_start, sym_end);
   if (ret == 0) {
     return ret;
-  } 
+  }
 
   if (ei->mdi == NULL) {
     return ret;
@@ -577,4 +581,24 @@ int elf_w (get_symbol_info_in_image) (struct elf_image *ei,
       ret = elf_w (find_symbol_info_in_image) (ei->mdi, load_offset, pc, buf_sz, buf, sym_start, sym_end);
   }
   return ret;
+}
+
+size_t calc_elf_file_size (void* elf, size_t map_sz)
+{
+  if (map_sz < sizeof(Elf_W (Ehdr))) {
+    Dprintf("invalid elf size? sz:%d, request sz:%d\n", (int)map_sz, (int)sizeof(Elf_W (Ehdr)));
+    return 0;
+  }
+
+  // validate the magic number and version of elf
+  if (!(memcmp (elf, ELFMAG, SELFMAG) == 0
+    && ((uint8_t *) elf)[EI_CLASS] == UNW_ELF_CLASS
+    && ((uint8_t *) elf)[EI_VERSION] != EV_NONE
+    && ((uint8_t *) elf)[EI_VERSION] <= EV_CURRENT)) {
+    Dprintf("invalid elf hdr?\n");
+    return 0;
+  }
+
+  Elf_W (Ehdr) *ehdr = elf;
+  return (ehdr->e_shoff + (ehdr->e_shentsize * ehdr->e_shnum));
 }

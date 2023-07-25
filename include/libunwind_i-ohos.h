@@ -55,6 +55,8 @@ extern void unw_destroy_local_address_space(unw_addr_space_t as);
 extern int unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t *uc);
 // Loop the symbol table to find matched symbol, only for local uinwinding
 extern int unw_get_symbol_info_by_pc(unw_addr_space_t as, uint64_t pc, int buf_sz, char *buf, uint64_t *sym_start, uint64_t *sym_end);
+// Get library name associated to specific map
+extern int unw_get_library_name_by_map (struct map_info* map, char *buf, int buf_sz);
 
 #ifdef __cplusplus
 }

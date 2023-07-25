@@ -39,5 +39,6 @@ extern int unw_step_ark_managed_native_frame(int pid, uintptr_t* pc, uintptr_t* 
 extern int unw_get_ark_js_heap_crash_info(int pid, uintptr_t* x20, uintptr_t* fp, int out_js_info, char* buf, size_t buf_sz);
 extern bool unw_is_ark_managed_frame(struct cursor* c);
 extern bool unw_get_build_id(struct map_info* map, uint8_t** build_id_ptr, size_t* length);
+extern int unw_get_library_name_by_map(struct map_info* map, char *buf, int buf_sz);
 
 #endif
