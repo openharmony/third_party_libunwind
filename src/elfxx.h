@@ -80,6 +80,8 @@ elf_w (valid_object) (struct elf_image *ei)
           && ((uint8_t *) ei->image)[EI_VERSION] <= EV_CURRENT);
 }
 
+extern size_t calc_elf_file_size (void* elf, size_t map_sz);
+
 static inline int
 elf_map_image (struct elf_image *ei, const char *path)
 {

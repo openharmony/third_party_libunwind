@@ -211,7 +211,8 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, struct elf_image *ei,
                   /* Assume that _DYNAMIC is writable and GLIBC has
                     relocated it (true for x86 at least).  */
                   edi->di_cache.gp = dyn->d_un.d_ptr;
-                  break;
+              } else if (dyn->d_tag == DT_SONAME) {
+                  ei->lib_name_offset = dyn->d_un.d_val;
               }
               ++dyn;
           }

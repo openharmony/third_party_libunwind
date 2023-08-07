@@ -342,6 +342,7 @@ struct elf_image
     int load_bias;
     int load_offset;
     char* strtab;
+    size_t lib_name_offset;
 #ifdef PARSE_BUILD_ID
     struct build_id_note* build_id_note;
 #endif
