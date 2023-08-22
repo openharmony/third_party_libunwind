@@ -66,7 +66,7 @@ unw_map_cursor_get (unw_map_cursor_t *map_cursor, unw_map_t *unw_map)
   unw_map->flags = map_info->flags;
   unw_map->path = map_info->path;
 
-  map_cursor->cur_map = map_info->next;
+  map_cursor->cur_map = map_info + 1;
 
   return 1;
 }

@@ -42,16 +42,10 @@ maps_create_list(pid_t pid)
   struct map_info *map_list = NULL;
   struct map_info *cur_map;
   struct map_info *buf;
-  int sz;
   int index = 0;
-  if ((sz = maps_init (&mi, pid)) < 0)
+  if ((maps_init (&mi, pid)) < 0)
     return NULL;
-
-  if (sz < 0 || sz > 65536) {
-    return NULL;
-  }
-
-  int buf_sz = sz + 256;
+  int buf_sz = 1024;
   buf = (struct map_info*)mmap(NULL, buf_sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (buf == NULL) {
     return NULL;
@@ -60,12 +54,22 @@ maps_create_list(pid_t pid)
   while (maps_next (&mi, &start, &end, &offset, &flags))
     {
       if (index >= buf_sz) {
-        Dprintf("Lost Map:%p-%p %s\n", (void*)start, (void*)end, mi.path);
+        struct map_info *newBuf = (struct map_info *)mmap(NULL, 2 * buf_sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+        if (buf != NULL && newBuf != NULL) {
+          memcpy(newBuf, buf, buf_sz * sizeof(struct map_info));
+          munmap(buf, buf_sz * sizeof(struct map_info));
+          buf_sz *= 2;
+          buf = newBuf;
+        } else {
+          Dprintf("Lost Map:%p-%p %s\n", (void*)start, (void*)end, mi.path);
+          continue;
+        }
+      }
+      char *match = strstr(mi.path, "/dev");
+      if (match != NULL && match - mi.path == 0) {
         continue;
       }
-
       cur_map = &buf[index];
-      cur_map->next = map_list;
       cur_map->start = start;
       cur_map->end = end;
       cur_map->offset = offset;
@@ -77,14 +81,16 @@ maps_create_list(pid_t pid)
       cur_map->ei.load_bias = -1;
       cur_map->ei.strtab = NULL;
       cur_map->ei.lib_name_offset = 0;
-      cur_map->sz = sz;
+      cur_map->sz = buf_sz;
       cur_map->buf = buf;
       cur_map->buf_sz = buf_sz;
-      map_list = cur_map;
       index = index + 1;
     }
-  if (map_list != NULL) {
-      map_list->sz = index;
+  if (&buf[0] != NULL) {
+    map_list = &buf[0];
+    map_list->sz = index;
+    map_list->buf = buf;
+    map_list->buf_sz = buf_sz;
   } else {
       munmap(buf, buf_sz * sizeof(struct map_info));
   }
@@ -99,10 +105,10 @@ maps_destroy_list(struct map_info *map_info)
   struct map_info *map;
   int buf_sz  = map_info->buf_sz;
   void* buf = map_info->buf;
-  while (map_info)
+  int sz = map_info->sz;
+  for (int i = 0; i < sz; i++)
     {
-      map = map_info;
-      map_info = map->next;
+      map = &map_info[i];
       if (map->ei.image != MAP_FAILED && map->ei.image != NULL) {
         munmap(map->ei.image, map->ei.size);
         map->ei.image = NULL;
@@ -179,12 +185,12 @@ static int map_elf_in_hap(struct map_info *map)
   // c38a6000-c3945000 r-xp 001d9000 /data/storage/el1/bundle/entry.hap <- pc is in this region
   // c3945000-c394b000 r--p 00277000 /data/storage/el1/bundle/entry.hap
   // c394b000-c394c000 rw-p 0027c000 /data/storage/el1/bundle/entry.hap
-  if (map->next == NULL) {
+  if (map - 1 == NULL) {
     Dprintf("no prev map exist.\n");
     return -1;
   }
 
-  struct map_info* prev = map->next;
+  struct map_info* prev = map - 1;
   struct stat stat;
   int fd;
   fd = UNW_TEMP_FAILURE_RETRY (open (map->path, O_RDONLY));

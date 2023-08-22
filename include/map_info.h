@@ -34,7 +34,6 @@ struct map_info
     char *path;
     struct elf_image ei;
     struct elf_image mdi;
-    struct map_info *next;
     int sz;
     void* buf;
     int buf_sz;

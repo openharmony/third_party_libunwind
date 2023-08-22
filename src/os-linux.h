@@ -112,7 +112,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
         {
           mi->offset = 0;
           mi->buf = mi->buf_end = cp + mi->buf_size;
-          return get_maps_count(mi->fd);
+          return 0;
         }
     }
   return -1;
