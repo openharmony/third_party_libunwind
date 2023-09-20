@@ -195,24 +195,24 @@ bool
 unw_is_ark_managed_frame(struct cursor* c)
 {
   if (c->dwarf.cached_map != NULL) {
-    Dprintf("cached map with elf image, not ark frame.\n");
+    Debug(0, "cached map with elf image, not ark frame.\n");
     return false;
   }
 
   struct map_info* map = get_map(c->dwarf.as->map_list, c->dwarf.ip);
   if (map == NULL) {
-    Dprintf("Not mapped ip.\n");
+    Debug(0, "Not mapped ip.\n");
     return false;
   }
 
   if ((strstr(map->path, "[anon:ArkTS Code]") == NULL) &&
       (strstr(map->path, "/dev/zero") == NULL)) {
-    Dprintf("Not ark map:%s.\n", map->path);
+    Debug(0, "Not ark map:%s.\n", map->path);
     return false;
   }
 
   if ((map->flags & PROT_EXEC) == 0) {
-    Dprintf("Target map is not executable.\n");
+    Debug(0, "Target map is not executable.\n");
     return false;
   }
 
