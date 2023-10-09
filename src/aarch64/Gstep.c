@@ -190,7 +190,7 @@ unw_step (unw_cursor_t *cursor)
     }
   }
 #endif
-  if (ret < 0 && c->dwarf.index == 0)
+  if (ret <= 0 && c->dwarf.index == 0)
     {
       /* IP points to non-mapped memory. */
       /* This is probably SIGBUS. */

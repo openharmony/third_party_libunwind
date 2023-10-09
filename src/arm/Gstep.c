@@ -132,7 +132,7 @@ unw_step (unw_cursor_t *cursor)
       ret = arm_exidx_step (c);
     }
 
-  if (ret < 0 && c->dwarf.index == 0) {
+  if (ret <= 0 && c->dwarf.index == 0) {
     // same with aarch64
     unw_word_t lr;
     if (dwarf_get(&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &lr) >= 0) {

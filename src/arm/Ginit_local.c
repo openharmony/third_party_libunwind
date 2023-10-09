@@ -65,7 +65,6 @@ unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t 
     tdep_init ();
 
   Debug (1, "(cursor=%p)\n", c);
-  unw_local_addr_space = as;
   c->dwarf.as = as;
   c->dwarf.as_arg = uc;
   c->dwarf.as->pid = -1;
