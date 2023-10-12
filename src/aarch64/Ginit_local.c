@@ -65,6 +65,9 @@ unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t 
   if (!atomic_load(&tdep_init_done))
     tdep_init ();
 
+#ifdef NO_RESERVE_CACHE
+  unw_local_addr_space = as;
+#endif
   c->dwarf.as = as;
   c->dwarf.as_arg = c;
   c->dwarf.as->pid = -1;
