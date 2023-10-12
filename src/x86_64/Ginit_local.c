@@ -65,6 +65,9 @@ unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t 
     tdep_init ();
 
   Debug (1, "(cursor=%p)\n", c);
+#ifdef NO_RESERVE_CACHE
+  unw_local_addr_space = as;
+#endif
   c->dwarf.as = as;
   c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 1);
   c->dwarf.cached_map = NULL;
