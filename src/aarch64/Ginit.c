@@ -176,11 +176,6 @@ write_validate (void *addr)
 static int (*mem_validate_func) (void *addr, size_t len);
 static int msync_validate (void *addr, size_t len)
 {
-  if (msync (addr, len, MS_ASYNC) != 0)
-    {
-      return -1;
-    }
-
   return write_validate (addr);
 }
 
