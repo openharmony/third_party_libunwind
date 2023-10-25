@@ -156,7 +156,7 @@ get_map(struct map_info *map_list, unw_word_t addr)
     }
   }
 
-  if ((addr >= buf[begin].start) && (addr <= buf[begin].end)) {
+  if ((begin < map_list->sz) && (addr >= buf[begin].start) && (addr <= buf[begin].end)) {
     return &buf[begin];
   }
 
