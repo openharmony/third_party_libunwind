@@ -149,6 +149,7 @@ step_by_frame_pointer (struct cursor *c)
     {
       return 0;
     }
+  c->dwarf.ip = clear_ptrauth(c->dwarf.ip);
   c->dwarf.loc[UNW_AARCH64_PC] = ip_loc;
   c->dwarf.loc[UNW_AARCH64_X29] = fp_loc;
   return (c->dwarf.ip == 0) ? 0 : 1;
@@ -198,6 +199,7 @@ unw_step (unw_cursor_t *cursor)
       Debug(1, "Invalid address found in the call stack: 0x%lx\n", c->dwarf.ip);
       unw_word_t lr;
       dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &lr);
+      lr = clear_ptrauth(lr);
       if (lr != c->dwarf.ip) {
         ret = 1;
         c->dwarf.ip = lr;
@@ -228,6 +230,7 @@ unw_step (unw_cursor_t *cursor)
                   return ret;
                 }
               Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
+              c->dwarf.ip = clear_ptrauth(c->dwarf.ip);
               ret = 1;
             }
           else
