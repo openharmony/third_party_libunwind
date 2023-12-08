@@ -74,7 +74,10 @@ maps_create_list(pid_t pid)
       cur_map->end = end;
       cur_map->offset = offset;
       cur_map->flags = flags;
-      cur_map->path = strdup(mi.path);
+      cur_map->path = "";
+      if (mi.path != NULL) {
+        cur_map->path = strdup(mi.path);
+      }
       cur_map->ei.size = 0;
       cur_map->ei.image = NULL;
       cur_map->ei.has_dyn_info = 0;
