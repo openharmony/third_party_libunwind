@@ -25,6 +25,8 @@
 # include "libunwind-x86_64.h"
 #elif defined __tilegx__
 # include "libunwind-tilegx.h"
+#elif defined(__riscv) && (__riscv_xlen == 64)
+# include "libunwind-riscv.h"
 #else
 # error "Unsupported arch"
 #endif
@@ -35,6 +37,8 @@
 # include "libunwind-arm.h"
 #elif defined UNW_TARGET_ARM64
 # include "libunwind-aarch64.h"
+#elif defined UNW_TARGET_RISCV
+# include "libunwind-riscv.h"
 #else
 # include "libunwind-x86_64.h"
 #endif
