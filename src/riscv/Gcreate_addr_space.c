@@ -48,8 +48,6 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
   memset (as, 0, sizeof (*as));
 
   as->acc = *a;
-  as->cursor = NULL;
-  as->pid = -1;
 
   return as;
 #endif

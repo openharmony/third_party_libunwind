@@ -49,28 +49,10 @@ unw_init_local_common(unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_in
 
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = cursor;
-  c->dwarf.cached_map = NULL;
-  c->dwarf.rel_pc = 0;
   c->uc = uc;
   c->validate = 1;
 
   return common_init (c, use_prev_instr);
-}
-
-int
-unw_init_local_with_as(unw_addr_space_t as, unw_cursor_t *cursor, unw_context_t *uc)
-{
-  struct cursor *c = (struct cursor *) cursor;
-
-  if (!atomic_load(&tdep_init_done))
-    tdep_init ();
-
-  unw_local_addr_space = as;
-  c->dwarf.as = as;
-  c->dwarf.as_arg = cursor;
-  c->uc = uc;
-  c->validate = 1;
-  return common_init (c, 1);
 }
 
 int

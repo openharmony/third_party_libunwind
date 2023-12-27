@@ -190,42 +190,6 @@ x64_source = [
   "src/x86_64/setcontext.S",
 ]
 
-riscv64_source = [
-  "src/elf64.c",
-  "src/riscv/Gapply_reg_state.c",
-  "src/riscv/Gcreate_addr_space.c",
-  "src/riscv/getcontext.S",
-  "src/riscv/Gget_proc_info.c",
-  "src/riscv/Gget_save_loc.c",
-  "src/riscv/Gglobal.c",
-  "src/riscv/Ginit.c",
-  "src/riscv/Ginit_local.c",
-  "src/riscv/Ginit_remote.c",
-  "src/riscv/Gis_signal_frame.c",
-  "src/riscv/Gregs.c",
-  "src/riscv/Greg_states_iterate.c",
-  "src/riscv/Gresume.c",
-  "src/riscv/Gstep.c",
-  "src/riscv/is_fpreg.c",
-  "src/riscv/Lapply_reg_state.c",
-  "src/riscv/Lcreate_addr_space.c",
-  "src/riscv/Lget_proc_info.c",
-  "src/riscv/Lget_save_loc.c",
-  "src/riscv/Lglobal.c",
-  "src/riscv/Linit.c",
-  "src/riscv/Linit_local.c",
-  "src/riscv/Linit_remote.c",
-  "src/riscv/Lis_signal_frame.c",
-  "src/riscv/Lregs.c",
-  "src/riscv/Lreg_states_iterate.c",
-  "src/riscv/Lresume.c",
-  "src/riscv/Lstep.c",
-  "src/riscv/offsets.h",
-  "src/riscv/regname.c",
-  "src/riscv/setcontext.S",
-  "src/riscv/siglongjmp.S",
-]
-
 remove_sources = []
 
 ptrace_sources = [
@@ -320,9 +284,6 @@ config("unwind_config_public") {
     cflags += [ "-Wno-incompatible-pointer-types" ]
   } else if (target_cpu == "x64" || target_cpu == "x86_64") {
     include_dirs += [ "include/tdep-x86_64" ]
-  } else if (target_cpu == "riscv64") {
-    include_dirs += [ "include/tdep-riscv" ]
-    cflags += [ "-Wno-implicit-function-declaration" ]
   }
 }
 
@@ -378,10 +339,6 @@ config("unwind_config_x64") {
 config("unwind_config_x86_64") {
   defines = [ "UNW_TARGET_X86_64" ]
   defines += [ "UNW_TARGET_X86_64_LINUX" ]
-}
-
-config("unwind_config_riscv64") {
-  defines = [ "UNW_TARGET_RISCV" ]
 }
 
 if (defined(ohos_lite)) {
@@ -551,19 +508,6 @@ if (defined(ohos_lite)) {
     sources -= remove_sources
   }
 
-  ohos_source_set("unwind_source_riscv64") {
-    configs = [ ":unwind_config_remote" ]
-    public_configs = [
-      ":unwind_config_public",
-      ":unwind_config_remote_public",
-      ":unwind_config_riscv64",
-    ]
-
-    sources = common_source
-    sources += riscv64_source
-    sources -= remove_sources
-  }
-
   ohos_source_set("unwind_source") {
     configs = [ ":unwind_config_public" ]
     sources = common_source
@@ -582,9 +526,6 @@ if (defined(ohos_lite)) {
     } else if (target_cpu == "x86_64") {
       sources += x64_source
       public_configs = [ ":unwind_config_x86_64" ]
-    } else if (target_cpu == "riscv64") {
-      sources += riscv64_source
-      public_configs = [ ":unwind_config_riscv64" ]
     }
 
     sources += [ "src/os-ohos.c" ]
