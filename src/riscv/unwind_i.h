@@ -36,7 +36,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define riscv_local_resume            UNW_OBJ(local_resume)
 #define riscv_local_addr_space_init   UNW_OBJ(local_addr_space_init)
 #define setcontext                    UNW_ARCH_OBJ (setcontext)
-#define init_local_addr_space         UNW_OBJ(init_local_addr_space)
 
 extern void riscv_local_addr_space_init (void);
 extern int riscv_local_resume (unw_addr_space_t as,
