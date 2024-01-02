@@ -17,6 +17,8 @@
 # include "libunwind-ppc32.h"
 #elif defined __powerpc64__
 # include "libunwind-ppc64.h"
+#elif defined(__riscv)
+# include "libunwind-riscv.h"
 #elif defined __sh__
 # include "libunwind-sh.h"
 #elif defined __i386__
@@ -35,6 +37,8 @@
 # include "libunwind-arm.h"
 #elif defined UNW_TARGET_ARM64
 # include "libunwind-aarch64.h"
+#elif defined UNW_TARGET_RISCV
+# include "libunwind-riscv.h"
 #else
 # include "libunwind-x86_64.h"
 #endif

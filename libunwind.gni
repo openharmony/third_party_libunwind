@@ -44,6 +44,21 @@ arm_source_local = [
   "src/arm/Ltrace.c",
 ]
 
+riscv64_source_local = [
+  "src/riscv/Lcreate_addr_space.c",
+  "src/riscv/Lget_proc_info.c",
+  "src/riscv/Lget_save_loc.c",
+  "src/riscv/Lglobal.c",
+  "src/riscv/Linit.c",
+  "src/riscv/Linit_local.c",
+  "src/riscv/Linit_remote.c",
+  "src/riscv/Lis_signal_frame.c",
+  "src/riscv/Lreg_states_iterate.c",
+  "src/riscv/Lregs.c",
+  "src/riscv/Lresume.c",
+  "src/riscv/Lstep.c",
+]
+
 x64_source_local = [
   "src/x86_64/Lcreate_addr_space.c",
   "src/x86_64/Lget_proc_info.c",

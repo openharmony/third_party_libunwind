@@ -25,6 +25,8 @@
 # include "tdep-x86_64/libunwind_i.h"
 #elif defined __tilegx__
 # include "tdep-tilegx/libunwind_i.h"
+#elif defined(__riscv)
+# include "tdep-riscv/libunwind_i.h"
 #else
 # error "Unsupported arch"
 #endif
@@ -35,6 +37,8 @@
 # include "tdep-arm/libunwind_i.h"
 #elif defined UNW_TARGET_ARM64
 # include "tdep-aarch64/libunwind_i.h"
+#elif defined UNW_TARGET_RISCV
+# include "tdep-riscv/libunwind_i.h"
 #else
 # include "tdep-x86_64/libunwind_i.h"
 #endif
