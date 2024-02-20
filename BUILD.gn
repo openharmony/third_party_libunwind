@@ -398,7 +398,7 @@ if (defined(ohos_lite)) {
     sources = common_source
     arm_source -= [
       "src/arm/getcontext.S",
-      "src/main/siglongjmp.S"
+      "src/arm/siglongjmp.S"
     ]
     sources += arm_source
     sources -= remove_sources
