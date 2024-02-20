@@ -14,7 +14,7 @@
         "subsystem": "thirdparty",
         "syscap": [],
         "features": [],
-        "adapted_system_type": [],
+        "adapted_system_type": [ "mini", "standard" ],
         "rom": "",
         "ram": "",
         "deps": {
@@ -23,7 +23,38 @@
         },
         "build": {
             "sub_component": [],
-            "inner_kits": [],
+            "inner_kits": [
+                {
+                    "name": "//third_party/libunwind:unwind_source_arm",
+                    "header": {
+                        "header_files": [],
+                        "header_base": [
+                            "//third_party/libunwind/src",
+                            "//third_party/libunwind/include"
+                        ]
+                    }
+                },
+                {
+                    "name": "//third_party/libunwind:libunwind",
+                    "header": {
+                        "header_files": [],
+                        "header_base": [
+                            "//third_party/libunwind/src",
+                            "//third_party/libunwind/include"
+                        ]
+                    }
+                },
+                {
+                    "name": "//third_party/libunwind:libunwind_local",
+                    "header": {
+                        "header_files": [],
+                        "header_base": [
+                            "//third_party/libunwind/src",
+                            "//third_party/libunwind/include"
+                        ]
+                    }
+                }
+            ],
             "test": [ "//third_party/libunwind:unittest" ]
         }
     }

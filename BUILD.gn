@@ -394,22 +394,23 @@ config("unwind_config_riscv64") {
 }
 
 if (defined(ohos_lite)) {
-  source_set("unwind_source_arm") {
-    configs += [ ":unwind_config_remote" ]
-    public_configs = [
-      ":unwind_config_public",
-      ":unwind_config_remote_public",
-      ":unwind_config_arm",
-    ]
+  ohos_static_library("unwind_source_arm") {
     sources = common_source
-
-    # no jump lib
     arm_source -= [
       "src/arm/getcontext.S",
       "src/arm/siglongjmp.S",
     ]
     sources += arm_source
     sources -= remove_sources
+
+    configs += [ ":unwind_config_remote" ]
+    public_configs = [
+      ":unwind_config_public",
+      ":unwind_config_remote_public",
+      ":unwind_config_arm",
+    ]
+    part_name = "libunwind"
+    subsystem_name = "thirdparty"
   }
 
   source_set("unwind_source_arm64") {
