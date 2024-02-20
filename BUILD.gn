@@ -542,7 +542,7 @@ if (defined(ohos_lite)) {
     ]
   }
 } else {
-  ohos_source_set("unwind_source_arm") {
+  ohos_static_library("unwind_source_arm") {
     configs = [ ":unwind_config_remote" ]
     public_configs = [
       ":unwind_config_public",
