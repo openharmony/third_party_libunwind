@@ -23,19 +23,7 @@
         },
         "build": {
             "sub_component": [],
-             "inner_kits": [
-                {
-                    "name": "//third_party/libunwind:libunwind",
-                    "header": {
-                        "header_files": [ 
-                        ],
-                        "header_base": [
-                            "//third_party/libunwind/src",
-                            "//third_party/libunwind/include"
-                        ]
-                    }
-                }
-            ],
+            "inner_kits": [],
             "test": [ "//third_party/libunwind:unittest" ]
         }
     }
