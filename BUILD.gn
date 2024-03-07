@@ -496,40 +496,9 @@ if (defined(ohos_lite)) {
     sources += [ "src/os-ohos.c" ]
   }
 
-  lite_library("libunwind") {
-    target_type = "shared_library"
-
-    #    deps = [ ":unwind_source" ]
+  shared_library("libunwind") {
+    deps = [ ":unwind_source" ]
     public_configs = [ ":unwind_config_public" ]
-    configs = []
-    sources = common_source
-
-    if (target_cpu == "arm") {
-      # no jump lib
-      arm_source -= [
-        "src/arm/getcontext.S",
-        "src/arm/siglongjmp.S",
-      ]
-
-      # as libc++ is static linked with libunwind.a
-      # we remove the Gstep.c for duplicated symbol violation
-      sources += arm_source
-      configs += [ ":unwind_config_arm" ]
-    } else if (target_cpu == "arm64") {
-      sources += arm64_source
-      configs += [ ":unwind_config_arm64" ]
-    } else if (target_cpu == "riscv64") {
-      sources += riscv64_source
-      configs += [ ":unwind_config_riscv64" ]
-    } else if (target_cpu == "x64") {
-      sources += x64_source
-      configs += [ ":unwind_config_x64" ]
-    } else if (target_cpu == "x86_64") {
-      sources += x64_source
-      configs += [ ":unwind_config_x86_64" ]
-    }
-
-    sources += [ "src/os-ohos.c" ]
   }
 
   static_library("libunwind_local") {
