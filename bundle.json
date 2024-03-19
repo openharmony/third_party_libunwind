@@ -23,7 +23,11 @@
         },
         "build": {
             "sub_component": [],
-            "inner_kits": [],
+            "inner_kits": [
+                {
+                    "name" : "//third_party/libunwind:libunwind"
+                }
+            ],
             "test": [ "//third_party/libunwind:unittest" ]
         }
     }
