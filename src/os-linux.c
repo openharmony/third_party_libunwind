@@ -47,7 +47,7 @@ maps_create_list(pid_t pid)
     return NULL;
   int buf_sz = 1024;
   buf = (struct map_info*)mmap(NULL, buf_sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-  if (buf == NULL) {
+  if (buf == MAP_FAILED) {
     return NULL;
   }
 
@@ -55,7 +55,7 @@ maps_create_list(pid_t pid)
     {
       if (index >= buf_sz) {
         struct map_info *newBuf = (struct map_info *)mmap(NULL, 2 * buf_sz * sizeof(struct map_info), PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-        if (buf != NULL && newBuf != NULL) {
+        if (buf != MAP_FAILED && newBuf != MAP_FAILED) {
           memcpy(newBuf, buf, buf_sz * sizeof(struct map_info));
           munmap(buf, buf_sz * sizeof(struct map_info));
           buf_sz *= 2;
