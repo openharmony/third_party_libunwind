@@ -17,259 +17,256 @@ if (defined(ohos_lite)) {
   import("//build/ohos.gni")
 }
 import("//third_party/libunwind/libunwind.gni")
-
 common_source = [
-  "src/dwarf/Gexpr.c",
-  "src/dwarf/Gfde.c",
-  "src/dwarf/Gfind_proc_info-lsb.c",
-  "src/dwarf/Gfind_unwind_table.c",
-  "src/dwarf/global.c",
-  "src/dwarf/Gparser.c",
-  "src/dwarf/Gpe.c",
-  "src/dwarf/Lexpr.c",
-  "src/dwarf/Lfde.c",
-  "src/dwarf/Lfind_proc_info-lsb.c",
-  "src/dwarf/Lfind_unwind_table.c",
-  "src/dwarf/Lparser.c",
-  "src/dwarf/Lpe.c",
-  "src/mi/backtrace.c",
-  "src/mi/dyn-cancel.c",
-  "src/mi/dyn-info-list.c",
-  "src/mi/dyn-register.c",
-  "src/mi/flush_cache.c",
-  "src/mi/Gdestroy_addr_space.c",
-  "src/mi/Gdyn-extract.c",
-  "src/mi/Gdyn-remote.c",
-  "src/mi/Gfind_dynamic_proc_info.c",
-  "src/mi/Gget_accessors.c",
-  "src/mi/Gget_fpreg.c",
-  "src/mi/Gget_proc_info_by_ip.c",
-  "src/mi/Gget_proc_name.c",
-  "src/mi/Gget_reg.c",
-  "src/mi/Gput_dynamic_unwind_info.c",
-  "src/mi/Gset_cache_size.c",
-  "src/mi/Gset_caching_policy.c",
-  "src/mi/Gset_fpreg.c",
-  "src/mi/Gset_reg.c",
-  "src/mi/init.c",
-  "src/mi/Ldestroy_addr_space.c",
-  "src/mi/Ldyn-extract.c",
-  "src/mi/Lfind_dynamic_proc_info.c",
-  "src/mi/Lget_fpreg.c",
-  "src/mi/Lget_proc_info_by_ip.c",
-  "src/mi/Lget_proc_name.c",
-  "src/mi/Lget_reg.c",
-  "src/mi/Lput_dynamic_unwind_info.c",
-  "src/mi/Lset_cache_size.c",
-  "src/mi/Lset_caching_policy.c",
-  "src/mi/Lset_fpreg.c",
-  "src/mi/Lset_reg.c",
-  "src/mi/mempool.c",
-  "src/mi/strerror.c",
-  "src/os-linux.c",
-  "src/ohos-config.c",
-  "src/ptrace/_UPT_access_fpreg.c",
-  "src/ptrace/_UPT_access_mem.c",
-  "src/ptrace/_UPT_access_reg.c",
-  "src/ptrace/_UPT_accessors.c",
-  "src/ptrace/_UPT_create.c",
-  "src/ptrace/_UPT_destroy.c",
-  "src/ptrace/_UPT_find_proc_info.c",
-  "src/ptrace/_UPT_get_dyn_info_list_addr.c",
-  "src/ptrace/_UPT_get_proc_name.c",
-  "src/ptrace/_UPT_put_unwind_info.c",
-  "src/ptrace/_UPT_reg_offset.c",
-  "src/ptrace/_UPT_resume.c",
-  "src/mi/maps.c",
+  "libunwind/src/dwarf/Gexpr.c",
+  "libunwind/src/dwarf/Gfde.c",
+  "libunwind/src/dwarf/Gfind_proc_info-lsb.c",
+  "libunwind/src/dwarf/Gfind_unwind_table.c",
+  "libunwind/src/dwarf/global.c",
+  "libunwind/src/dwarf/Gparser.c",
+  "libunwind/src/dwarf/Gpe.c",
+  "libunwind/src/dwarf/Lexpr.c",
+  "libunwind/src/dwarf/Lfde.c",
+  "libunwind/src/dwarf/Lfind_proc_info-lsb.c",
+  "libunwind/src/dwarf/Lfind_unwind_table.c",
+  "libunwind/src/dwarf/Lparser.c",
+  "libunwind/src/dwarf/Lpe.c",
+  "libunwind/src/mi/backtrace.c",
+  "libunwind/src/mi/dyn-cancel.c",
+  "libunwind/src/mi/dyn-info-list.c",
+  "libunwind/src/mi/dyn-register.c",
+  "libunwind/src/mi/flush_cache.c",
+  "libunwind/src/mi/Gdestroy_addr_space.c",
+  "libunwind/src/mi/Gdyn-extract.c",
+  "libunwind/src/mi/Gdyn-remote.c",
+  "libunwind/src/mi/Gfind_dynamic_proc_info.c",
+  "libunwind/src/mi/Gget_accessors.c",
+  "libunwind/src/mi/Gget_fpreg.c",
+  "libunwind/src/mi/Gget_proc_info_by_ip.c",
+  "libunwind/src/mi/Gget_proc_name.c",
+  "libunwind/src/mi/Gget_reg.c",
+  "libunwind/src/mi/Gput_dynamic_unwind_info.c",
+  "libunwind/src/mi/Gset_cache_size.c",
+  "libunwind/src/mi/Gset_caching_policy.c",
+  "libunwind/src/mi/Gset_fpreg.c",
+  "libunwind/src/mi/Gset_reg.c",
+  "libunwind/src/mi/init.c",
+  "libunwind/src/mi/Ldestroy_addr_space.c",
+  "libunwind/src/mi/Ldyn-extract.c",
+  "libunwind/src/mi/Lfind_dynamic_proc_info.c",
+  "libunwind/src/mi/Lget_fpreg.c",
+  "libunwind/src/mi/Lget_proc_info_by_ip.c",
+  "libunwind/src/mi/Lget_proc_name.c",
+  "libunwind/src/mi/Lget_reg.c",
+  "libunwind/src/mi/Lput_dynamic_unwind_info.c",
+  "libunwind/src/mi/Lset_cache_size.c",
+  "libunwind/src/mi/Lset_caching_policy.c",
+  "libunwind/src/mi/Lset_fpreg.c",
+  "libunwind/src/mi/Lset_reg.c",
+  "libunwind/src/mi/mempool.c",
+  "libunwind/src/mi/strerror.c",
+  "libunwind/src/os-linux.c",
+  "libunwind/src/ptrace/_UPT_access_fpreg.c",
+  "libunwind/src/ptrace/_UPT_access_mem.c",
+  "libunwind/src/ptrace/_UPT_access_reg.c",
+  "libunwind/src/ptrace/_UPT_accessors.c",
+  "libunwind/src/ptrace/_UPT_create.c",
+  "libunwind/src/ptrace/_UPT_destroy.c",
+  "libunwind/src/ptrace/_UPT_find_proc_info.c",
+  "libunwind/src/ptrace/_UPT_get_dyn_info_list_addr.c",
+  "libunwind/src/ptrace/_UPT_get_proc_name.c",
+  "libunwind/src/ptrace/_UPT_put_unwind_info.c",
+  "libunwind/src/ptrace/_UPT_reg_offset.c",
+  "libunwind/src/ptrace/_UPT_resume.c",
 ]
 
 # as libc++ is static linked with libunwind.a
 # we remove the Gstep.c for duplicated symbol violation
 arm_source = [
-  "src/arm/Gapply_reg_state.c",
-  "src/arm/Gcreate_addr_space.c",
-  "src/arm/Gex_tables.c",
-  "src/arm/Gget_proc_info.c",
-  "src/arm/Gget_save_loc.c",
-  "src/arm/Gglobal.c",
-  "src/arm/Ginit.c",
-  "src/arm/Ginit_local.c",
-  "src/arm/Ginit_remote.c",
-  "src/arm/Gos-linux.c",
-  "src/arm/Greg_states_iterate.c",
-  "src/arm/Gregs.c",
-  "src/arm/Gresume.c",
-  "src/arm/Gstash_frame.c",
-  "src/arm/Gstep.c",
-  "src/arm/Gtrace.c",
-  "src/arm/Lcreate_addr_space.c",
-  "src/arm/Lex_tables.c",
-  "src/arm/Lget_proc_info.c",
-  "src/arm/Lget_save_loc.c",
-  "src/arm/Lglobal.c",
-  "src/arm/Linit.c",
-  "src/arm/Linit_local.c",
-  "src/arm/Linit_remote.c",
-  "src/arm/Los-linux.c",
-  "src/arm/Lregs.c",
-  "src/arm/Lresume.c",
-  "src/arm/Lstash_frame.c",
-  "src/arm/Lstep.c",
-  "src/arm/Ltrace.c",
-  "src/arm/getcontext.S",
-  "src/arm/is_fpreg.c",
-  "src/arm/regname.c",
-  "src/arm/siglongjmp.S",
-  "src/elf32.c",
+  "libunwind/src/arm/Gapply_reg_state.c",
+  "libunwind/src/arm/Gcreate_addr_space.c",
+  "libunwind/src/arm/Gex_tables.c",
+  "libunwind/src/arm/Gget_proc_info.c",
+  "libunwind/src/arm/Gget_save_loc.c",
+  "libunwind/src/arm/Gglobal.c",
+  "libunwind/src/arm/Ginit.c",
+  "libunwind/src/arm/Ginit_local.c",
+  "libunwind/src/arm/Ginit_remote.c",
+  "libunwind/src/arm/Gos-linux.c",
+  "libunwind/src/arm/Greg_states_iterate.c",
+  "libunwind/src/arm/Gregs.c",
+  "libunwind/src/arm/Gresume.c",
+  "libunwind/src/arm/Gstash_frame.c",
+  "libunwind/src/arm/Gstep.c",
+  "libunwind/src/arm/Gtrace.c",
+  "libunwind/src/arm/Lcreate_addr_space.c",
+  "libunwind/src/arm/Lex_tables.c",
+  "libunwind/src/arm/Lget_proc_info.c",
+  "libunwind/src/arm/Lget_save_loc.c",
+  "libunwind/src/arm/Lglobal.c",
+  "libunwind/src/arm/Linit.c",
+  "libunwind/src/arm/Linit_local.c",
+  "libunwind/src/arm/Linit_remote.c",
+  "libunwind/src/arm/Los-linux.c",
+  "libunwind/src/arm/Lregs.c",
+  "libunwind/src/arm/Lresume.c",
+  "libunwind/src/arm/Lstash_frame.c",
+  "libunwind/src/arm/Lstep.c",
+  "libunwind/src/arm/Ltrace.c",
+  "libunwind/src/arm/getcontext.S",
+  "libunwind/src/arm/is_fpreg.c",
+  "libunwind/src/arm/regname.c",
+  "libunwind/src/arm/siglongjmp.S",
+  "libunwind/src/elf32.c",
 ]
 
 arm64_source = [
-  "src/aarch64/Gcreate_addr_space.c",
-  "src/aarch64/Gget_proc_info.c",
-  "src/aarch64/Gget_save_loc.c",
-  "src/aarch64/Gglobal.c",
-  "src/aarch64/Ginit.c",
-  "src/aarch64/Ginit_local.c",
-  "src/aarch64/Ginit_remote.c",
-  "src/aarch64/Gis_signal_frame.c",
-  "src/aarch64/Gregs.c",
-  "src/aarch64/Gresume.c",
-  "src/aarch64/Gstash_frame.c",
-  "src/aarch64/Gstep.c",
-  "src/aarch64/Gtrace.c",
-  "src/aarch64/Lcreate_addr_space.c",
-  "src/aarch64/Lget_proc_info.c",
-  "src/aarch64/Lget_save_loc.c",
-  "src/aarch64/Lglobal.c",
-  "src/aarch64/Linit.c",
-  "src/aarch64/Linit_local.c",
-  "src/aarch64/Linit_remote.c",
-  "src/aarch64/Lis_signal_frame.c",
-  "src/aarch64/Lregs.c",
-  "src/aarch64/Lresume.c",
-  "src/aarch64/Lstash_frame.c",
-  "src/aarch64/Lstep.c",
-  "src/aarch64/Ltrace.c",
-  "src/aarch64/getcontext.S",
-  "src/aarch64/is_fpreg.c",
-  "src/aarch64/regname.c",
-  "src/elf64.c",
+  "libunwind/src/aarch64/Gcreate_addr_space.c",
+  "libunwind/src/aarch64/Gget_proc_info.c",
+  "libunwind/src/aarch64/Gget_save_loc.c",
+  "libunwind/src/aarch64/Gglobal.c",
+  "libunwind/src/aarch64/Ginit.c",
+  "libunwind/src/aarch64/Ginit_local.c",
+  "libunwind/src/aarch64/Ginit_remote.c",
+  "libunwind/src/aarch64/Gis_signal_frame.c",
+  "libunwind/src/aarch64/Gregs.c",
+  "libunwind/src/aarch64/Gresume.c",
+  "libunwind/src/aarch64/Gstash_frame.c",
+  "libunwind/src/aarch64/Gstep.c",
+  "libunwind/src/aarch64/Gtrace.c",
+  "libunwind/src/aarch64/Lcreate_addr_space.c",
+  "libunwind/src/aarch64/Lget_proc_info.c",
+  "libunwind/src/aarch64/Lget_save_loc.c",
+  "libunwind/src/aarch64/Lglobal.c",
+  "libunwind/src/aarch64/Linit.c",
+  "libunwind/src/aarch64/Linit_local.c",
+  "libunwind/src/aarch64/Linit_remote.c",
+  "libunwind/src/aarch64/Lis_signal_frame.c",
+  "libunwind/src/aarch64/Lregs.c",
+  "libunwind/src/aarch64/Lresume.c",
+  "libunwind/src/aarch64/Lstash_frame.c",
+  "libunwind/src/aarch64/Lstep.c",
+  "libunwind/src/aarch64/Ltrace.c",
+  "libunwind/src/aarch64/getcontext.S",
+  "libunwind/src/aarch64/is_fpreg.c",
+  "libunwind/src/aarch64/regname.c",
+  "libunwind/src/elf64.c",
 ]
 
 x64_source = [
-  "src/elf64.c",
-  "src/x86_64/Gcreate_addr_space.c",
-  "src/x86_64/Gget_proc_info.c",
-  "src/x86_64/Gget_save_loc.c",
-  "src/x86_64/Gglobal.c",
-  "src/x86_64/Ginit.c",
-  "src/x86_64/Ginit_local.c",
-  "src/x86_64/Ginit_remote.c",
-  "src/x86_64/Gos-linux.c",
-  "src/x86_64/Gregs.c",
-  "src/x86_64/Gresume.c",
-  "src/x86_64/Gstash_frame.c",
-  "src/x86_64/Gstep.c",
-  "src/x86_64/Gtrace.c",
-  "src/x86_64/Lcreate_addr_space.c",
-  "src/x86_64/Lget_proc_info.c",
-  "src/x86_64/Lget_save_loc.c",
-  "src/x86_64/Lglobal.c",
-  "src/x86_64/Linit.c",
-  "src/x86_64/Linit_local.c",
-  "src/x86_64/Linit_remote.c",
-  "src/x86_64/Los-linux.c",
-  "src/x86_64/Lregs.c",
-  "src/x86_64/Lresume.c",
-  "src/x86_64/Lstash_frame.c",
-  "src/x86_64/Lstep.c",
-  "src/x86_64/Ltrace.c",
-  "src/x86_64/getcontext.S",
-  "src/x86_64/is_fpreg.c",
-  "src/x86_64/regname.c",
-  "src/x86_64/setcontext.S",
+  "libunwind/src/elf64.c",
+  "libunwind/src/x86_64/Gcreate_addr_space.c",
+  "libunwind/src/x86_64/Gget_proc_info.c",
+  "libunwind/src/x86_64/Gget_save_loc.c",
+  "libunwind/src/x86_64/Gglobal.c",
+  "libunwind/src/x86_64/Ginit.c",
+  "libunwind/src/x86_64/Ginit_local.c",
+  "libunwind/src/x86_64/Ginit_remote.c",
+  "libunwind/src/x86_64/Gos-linux.c",
+  "libunwind/src/x86_64/Gregs.c",
+  "libunwind/src/x86_64/Gresume.c",
+  "libunwind/src/x86_64/Gstash_frame.c",
+  "libunwind/src/x86_64/Gstep.c",
+  "libunwind/src/x86_64/Gtrace.c",
+  "libunwind/src/x86_64/Lcreate_addr_space.c",
+  "libunwind/src/x86_64/Lget_proc_info.c",
+  "libunwind/src/x86_64/Lget_save_loc.c",
+  "libunwind/src/x86_64/Lglobal.c",
+  "libunwind/src/x86_64/Linit.c",
+  "libunwind/src/x86_64/Linit_local.c",
+  "libunwind/src/x86_64/Linit_remote.c",
+  "libunwind/src/x86_64/Los-linux.c",
+  "libunwind/src/x86_64/Lregs.c",
+  "libunwind/src/x86_64/Lresume.c",
+  "libunwind/src/x86_64/Lstash_frame.c",
+  "libunwind/src/x86_64/Lstep.c",
+  "libunwind/src/x86_64/Ltrace.c",
+  "libunwind/src/x86_64/getcontext.S",
+  "libunwind/src/x86_64/is_fpreg.c",
+  "libunwind/src/x86_64/regname.c",
+  "libunwind/src/x86_64/setcontext.S",
 ]
 
 riscv64_source = [
-  "src/elf64.c",
-  "src/riscv/Gapply_reg_state.c",
-  "src/riscv/Gcreate_addr_space.c",
-  "src/riscv/getcontext.S",
-  "src/riscv/Gget_proc_info.c",
-  "src/riscv/Gget_save_loc.c",
-  "src/riscv/Gglobal.c",
-  "src/riscv/Ginit.c",
-  "src/riscv/Ginit_local.c",
-  "src/riscv/Ginit_remote.c",
-  "src/riscv/Gis_signal_frame.c",
-  "src/riscv/Gregs.c",
-  "src/riscv/Greg_states_iterate.c",
-  "src/riscv/Gresume.c",
-  "src/riscv/Gstep.c",
-  "src/riscv/is_fpreg.c",
-  "src/riscv/Lcreate_addr_space.c",
-  "src/riscv/Lget_proc_info.c",
-  "src/riscv/Lget_save_loc.c",
-  "src/riscv/Lglobal.c",
-  "src/riscv/Linit.c",
-  "src/riscv/Linit_local.c",
-  "src/riscv/Linit_remote.c",
-  "src/riscv/Lis_signal_frame.c",
-  "src/riscv/Lregs.c",
-  "src/riscv/Lreg_states_iterate.c",
-  "src/riscv/Lresume.c",
-  "src/riscv/Lstep.c",
-  "src/riscv/offsets.h",
-  "src/riscv/regname.c",
-  "src/riscv/setcontext.S",
-  "src/riscv/siglongjmp.S",
+  "libunwind/src/elf64.c",
+  "libunwind/src/riscv/Gapply_reg_state.c",
+  "libunwind/src/riscv/Gcreate_addr_space.c",
+  "libunwind/src/riscv/getcontext.S",
+  "libunwind/src/riscv/Gget_proc_info.c",
+  "libunwind/src/riscv/Gget_save_loc.c",
+  "libunwind/src/riscv/Gglobal.c",
+  "libunwind/src/riscv/Ginit.c",
+  "libunwind/src/riscv/Ginit_local.c",
+  "libunwind/src/riscv/Ginit_remote.c",
+  "libunwind/src/riscv/Gis_signal_frame.c",
+  "libunwind/src/riscv/Gregs.c",
+  "libunwind/src/riscv/Greg_states_iterate.c",
+  "libunwind/src/riscv/Gresume.c",
+  "libunwind/src/riscv/Gstep.c",
+  "libunwind/src/riscv/is_fpreg.c",
+  "libunwind/src/riscv/Lcreate_addr_space.c",
+  "libunwind/src/riscv/Lget_proc_info.c",
+  "libunwind/src/riscv/Lget_save_loc.c",
+  "libunwind/src/riscv/Lglobal.c",
+  "libunwind/src/riscv/Linit.c",
+  "libunwind/src/riscv/Linit_local.c",
+  "libunwind/src/riscv/Linit_remote.c",
+  "libunwind/src/riscv/Lis_signal_frame.c",
+  "libunwind/src/riscv/Lregs.c",
+  "libunwind/src/riscv/Lreg_states_iterate.c",
+  "libunwind/src/riscv/Lresume.c",
+  "libunwind/src/riscv/Lstep.c",
+  "libunwind/src/riscv/offsets.h",
+  "libunwind/src/riscv/regname.c",
+  "libunwind/src/riscv/setcontext.S",
+  "libunwind/src/riscv/siglongjmp.S",
 ]
 
 remove_sources = []
 
 ptrace_sources = [
-  "src/ptrace/_UPT_access_fpreg.c",
-  "src/ptrace/_UPT_access_mem.c",
-  "src/ptrace/_UPT_access_reg.c",
-  "src/ptrace/_UPT_accessors.c",
-  "src/ptrace/_UPT_create.c",
-  "src/ptrace/_UPT_destroy.c",
-  "src/ptrace/_UPT_find_proc_info.c",
-  "src/ptrace/_UPT_get_dyn_info_list_addr.c",
-  "src/ptrace/_UPT_get_proc_name.c",
-  "src/ptrace/_UPT_put_unwind_info.c",
-  "src/ptrace/_UPT_reg_offset.c",
-  "src/ptrace/_UPT_resume.c",
+  "libunwind/src/ptrace/_UPT_access_fpreg.c",
+  "libunwind/src/ptrace/_UPT_access_mem.c",
+  "libunwind/src/ptrace/_UPT_access_reg.c",
+  "libunwind/src/ptrace/_UPT_accessors.c",
+  "libunwind/src/ptrace/_UPT_create.c",
+  "libunwind/src/ptrace/_UPT_destroy.c",
+  "libunwind/src/ptrace/_UPT_find_proc_info.c",
+  "libunwind/src/ptrace/_UPT_get_dyn_info_list_addr.c",
+  "libunwind/src/ptrace/_UPT_get_proc_name.c",
+  "libunwind/src/ptrace/_UPT_put_unwind_info.c",
+  "libunwind/src/ptrace/_UPT_reg_offset.c",
+  "libunwind/src/ptrace/_UPT_resume.c",
 ]
 
 libunwind_la_SOURCES_local_nounwind = [
-  "src/mi/backtrace.c",
-  "src/mi/dyn-cancel.c",
-  "src/mi/dyn-info-list.c",
-  "src/mi/dyn-register.c",
-  "src/mi/Ldyn-extract.c",
-  "src/mi/Lfind_dynamic_proc_info.c",
+  "libunwind/src/mi/backtrace.c",
+  "libunwind/src/mi/dyn-cancel.c",
+  "libunwind/src/mi/dyn-info-list.c",
+  "libunwind/src/mi/dyn-register.c",
+  "libunwind/src/mi/Ldyn-extract.c",
+  "libunwind/src/mi/Lfind_dynamic_proc_info.c",
 
-  # "src/mi/Lget_accessors.c", # miss
-  "src/mi/Lget_proc_info_by_ip.c",
-  "src/mi/Lget_proc_name.c",
-  "src/mi/Lput_dynamic_unwind_info.c",
-  "src/mi/Ldestroy_addr_space.c",
-  "src/mi/Lget_reg.c",
-  "src/mi/Lset_reg.c",
-  "src/mi/Lget_fpreg.c",
-  "src/mi/Lset_fpreg.c",
-  "src/mi/Lset_caching_policy.c",
-  "src/mi/Lset_cache_size.c",
+  # "libunwind/src/mi/Lget_accessors.c", # miss
+  "libunwind/src/mi/Lget_proc_info_by_ip.c",
+  "libunwind/src/mi/Lget_proc_name.c",
+  "libunwind/src/mi/Lput_dynamic_unwind_info.c",
+  "libunwind/src/mi/Ldestroy_addr_space.c",
+  "libunwind/src/mi/Lget_reg.c",
+  "libunwind/src/mi/Lset_reg.c",
+  "libunwind/src/mi/Lget_fpreg.c",
+  "libunwind/src/mi/Lset_fpreg.c",
+  "libunwind/src/mi/Lset_caching_policy.c",
+  "libunwind/src/mi/Lset_cache_size.c",
 ]
 
 libunwind_dwarf_local_la_SOURCES = [
-  "src/dwarf/Lexpr.c",
-  "src/dwarf/Lfde.c",
-  "src/dwarf/Lparser.c",
-  "src/dwarf/Lpe.c",
-  "src/dwarf/Lfind_proc_info-lsb.c",
-  "src/dwarf/Lfind_unwind_table.c",
+  "libunwind/src/dwarf/Lexpr.c",
+  "libunwind/src/dwarf/Lfde.c",
+  "libunwind/src/dwarf/Lparser.c",
+  "libunwind/src/dwarf/Lpe.c",
+  "libunwind/src/dwarf/Lfind_proc_info-lsb.c",
+  "libunwind/src/dwarf/Lfind_unwind_table.c",
 ]
 
 # remove local file
@@ -278,13 +275,13 @@ remove_sources += libunwind_dwarf_local_la_SOURCES
 remove_sources += ptrace_sources
 
 if (is_mingw) {
-  common_source += [ "src/mingw/pal-single-threaded.c" ]
+  common_source += [ "libunwind/src/mingw/pal-single-threaded.c" ]
 }
 
 config("unwind_config_public") {
   include_dirs = [
-    "src",
-    "include",
+    "libunwind/src",
+    "libunwind/include",
   ]
 
   cflags = [
@@ -293,13 +290,13 @@ config("unwind_config_public") {
     "-DNDEBUG",
     "-DCC_IS_CLANG",
     "-fcommon",
-    "-Werror",
     "-Wno-absolute-value",
     "-Wno-header-guard",
     "-Wno-unused-parameter",
     "-Wno-unused-variable",
     "-Wno-int-to-pointer-cast",
     "-Wno-pointer-to-int-cast",
+    "-Wno-error",
   ]
 
   if (defined(ohos_lite)) {
@@ -307,7 +304,7 @@ config("unwind_config_public") {
   }
 
   if (target_cpu == "arm") {
-    include_dirs += [ "include/tdep-arm" ]
+    include_dirs += [ "libunwind/include/tdep-arm" ]
     cflags += [
       "-Wno-inline-asm",
       "-Wno-shift-count-overflow",
@@ -315,15 +312,15 @@ config("unwind_config_public") {
       "-Wno-unused-function",
     ]
   } else if (target_cpu == "riscv64") {
-    include_dirs += [ "include/tdep-riscv" ]
+    include_dirs += [ "libunwind/include/tdep-riscv" ]
     cflags += [ "-Wno-implicit-function-declaration" ]
   } else if (target_cpu == "arm64") {
-    include_dirs += [ "include/tdep-aarch64" ]
+    include_dirs += [ "libunwind/include/tdep-aarch64" ]
     cflags += [ "-Wno-incompatible-pointer-types" ]
   } else if (target_cpu == "x64" || target_cpu == "x86_64") {
-    include_dirs += [ "include/tdep-x86_64" ]
+    include_dirs += [ "libunwind/include/tdep-x86_64" ]
   } else if (target_cpu == "mipsel") {
-    include_dirs += [ "include/tdep-mips" ]
+    include_dirs += [ "libunwind/include/tdep-mips" ]
   }
 }
 
@@ -354,7 +351,7 @@ config("unwind_config_remote_public") {
   cflags += [ "-Wno-int-to-void-pointer-cast" ]
 
   if (is_mingw) {
-    include_dirs += [ "include/mingw" ]
+    include_dirs += [ "libunwind/include/mingw" ]
     cflags += [ "-DMINGW" ]
   } else if (is_linux) {
     cflags += [ "-g" ]  # we need debug info when it crash.
@@ -405,8 +402,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     arm_source -= [
-      "src/arm/getcontext.S",
-      "src/arm/siglongjmp.S",
+      "libunwind/src/arm/getcontext.S",
+      "libunwind/src/arm/siglongjmp.S",
     ]
     sources += arm_source
     sources -= remove_sources
@@ -421,7 +418,7 @@ if (defined(ohos_lite)) {
     ]
     sources = common_source
 
-    arm64_source -= [ "src/aarch64/getcontext.S" ]
+    arm64_source -= [ "libunwind/src/aarch64/getcontext.S" ]
 
     sources += arm64_source
     sources -= remove_sources
@@ -438,8 +435,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     x64_source -= [
-      "src/x86_64/getcontext.S",
-      "src/x86_64/setcontext.S",
+      "libunwind/src/x86_64/getcontext.S",
+      "libunwind/src/x86_64/setcontext.S",
     ]
     sources += x64_source
     sources -= remove_sources
@@ -456,8 +453,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     riscv64_source -= [
-      "src/riscv/getcontext.S",
-      "src/riscv/setcontext.S",
+      "libunwind/src/riscv/getcontext.S",
+      "libunwind/src/riscv/setcontext.S",
     ]
 
     sources += riscv64_source
@@ -471,8 +468,8 @@ if (defined(ohos_lite)) {
     if (target_cpu == "arm") {
       # no jump lib
       arm_source -= [
-        "src/arm/getcontext.S",
-        "src/arm/siglongjmp.S",
+        "libunwind/src/arm/getcontext.S",
+        "libunwind/src/arm/siglongjmp.S",
       ]
 
       # as libc++ is static linked with libunwind.a
@@ -492,8 +489,6 @@ if (defined(ohos_lite)) {
       sources += x64_source
       public_configs = [ ":unwind_config_x86_64" ]
     }
-
-    sources += [ "src/os-ohos.c" ]
   }
 
   shared_library("libunwind") {
@@ -528,7 +523,6 @@ if (defined(ohos_lite)) {
       public_configs += [ ":unwind_config_x86_64" ]
     }
 
-    sources += [ "src/os-ohos.c" ]
     sources -= libunwind_dwarf_local_la_SOURCES
     sources -= libunwind_la_SOURCES_local
     sources -= ptrace_sources
@@ -552,8 +546,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     arm_source -= [
-      "src/arm/getcontext.S",
-      "src/arm/siglongjmp.S",
+      "libunwind/src/arm/getcontext.S",
+      "libunwind/src/arm/siglongjmp.S",
     ]
     sources += arm_source
     sources -= remove_sources
@@ -568,7 +562,7 @@ if (defined(ohos_lite)) {
     ]
     sources = common_source
 
-    arm64_source -= [ "src/aarch64/getcontext.S" ]
+    arm64_source -= [ "libunwind/src/aarch64/getcontext.S" ]
 
     sources += arm64_source
     sources -= remove_sources
@@ -584,7 +578,7 @@ if (defined(ohos_lite)) {
     ]
     sources = common_source
 
-    arm64_source -= [ "src/aarch64/getcontext.S" ]
+    arm64_source -= [ "libunwind/src/aarch64/getcontext.S" ]
 
     sources += arm64_source
     sources -= remove_sources
@@ -601,8 +595,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     x64_source -= [
-      "src/x86_64/getcontext.S",
-      "src/x86_64/setcontext.S",
+      "libunwind/src/x86_64/getcontext.S",
+      "libunwind/src/x86_64/setcontext.S",
     ]
     sources += x64_source
     sources -= remove_sources
@@ -619,8 +613,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     x64_source -= [
-      "src/x86_64/getcontext.S",
-      "src/x86_64/setcontext.S",
+      "libunwind/src/x86_64/getcontext.S",
+      "libunwind/src/x86_64/setcontext.S",
     ]
     sources += x64_source
     sources -= remove_sources
@@ -637,8 +631,8 @@ if (defined(ohos_lite)) {
 
     # no jump lib
     riscv64_source -= [
-      "src/riscv/getcontext.S",
-      "src/riscv/setcontext.S",
+      "libunwind/src/riscv/getcontext.S",
+      "libunwind/src/riscv/setcontext.S",
     ]
 
     sources += riscv64_source
@@ -668,7 +662,6 @@ if (defined(ohos_lite)) {
       public_configs = [ ":unwind_config_x86_64" ]
     }
 
-    sources += [ "src/os-ohos.c" ]
     cflags = [
       "-DHAS_ARK_FRAME",
       "-DPARSE_BUILD_ID",
@@ -719,7 +712,6 @@ if (defined(ohos_lite)) {
       public_configs += [ ":unwind_config_x86_64" ]
     }
 
-    sources += [ "src/os-ohos.c" ]
     sources -= libunwind_dwarf_local_la_SOURCES
     sources -= libunwind_la_SOURCES_local
     sources -= ptrace_sources
@@ -766,10 +758,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Gtest_init") {
     module_out_path = module_output_path
-    sources = [ "tests/Gtest-init.cxx" ]
+    sources = [ "libunwind/test/Gtest-init.cxx" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
 
     configs = [ ":unwind_test" ]
@@ -780,10 +772,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Ltest_init") {
     module_out_path = module_output_path
-    sources = [ "tests/Ltest-init.cxx" ]
+    sources = [ "libunwind/test/Ltest-init.cxx" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -793,10 +785,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Ltest_cxx_exceptions") {
     module_out_path = module_output_path
-    sources = [ "tests/Ltest-cxx-exceptions.cxx" ]
+    sources = [ "libunwind/test/Ltest-cxx-exceptions.cxx" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     cflags = [ "-fexceptions" ]
@@ -809,12 +801,12 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Ltest_init_local_signal") {
     module_out_path = module_output_path
     sources = [
-      "tests/Ltest-init-local-signal-lib.c",
-      "tests/Ltest-init-local-signal.c",
+      "libunwind/test/Ltest-init-local-signal-lib.c",
+      "libunwind/test/Ltest-init-local-signal.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -825,15 +817,15 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Gtest_dyn1") {
     module_out_path = module_output_path
     sources = [
-      "tests/Gtest-dyn1.c",
-      "tests/flush-cache.h",
+      "libunwind/test/Gtest-dyn1.c",
+      "libunwind/test/flush-cache.h",
     ]
     if (target_cpu == "arm") {
-      sources += [ "tests/flush-cache.S" ]
+      sources += [ "libunwind/test/flush-cache.S" ]
     }
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     cflags = [ "-DHAVE__BUILTIN___CLEAR_CACHE" ]
@@ -845,15 +837,15 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Ltest_dyn1") {
     module_out_path = module_output_path
     sources = [
-      "tests/Ltest-dyn1.c",
-      "tests/flush-cache.h",
+      "libunwind/test/Ltest-dyn1.c",
+      "libunwind/test/flush-cache.h",
     ]
     if (target_cpu == "arm") {
-      sources += [ "tests/flush-cache.S" ]
+      sources += [ "libunwind/test/flush-cache.S" ]
     }
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     cflags = [ "-DHAVE__BUILTIN___CLEAR_CACHE" ]
@@ -865,12 +857,12 @@ if (!defined(ohos_lite)) {
   ohos_unittest("test_static_link") {
     module_out_path = module_output_path
     sources = [
-      "tests/test-static-link-gen.c",
-      "tests/test-static-link-loc.c",
+      "libunwind/test/test-static-link-gen.c",
+      "libunwind/test/test-static-link-loc.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -881,13 +873,13 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Gtest_bt") {
     module_out_path = module_output_path
     sources = [
-      "tests/Gtest-bt.c",
-      "tests/dummy_backtrace.c",
-      "tests/ident.c",
+      "libunwind/test/Gtest-bt.c",
+      "libunwind/test/dummy_backtrace.c",
+      "libunwind/test/ident.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -898,13 +890,13 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Ltest_bt") {
     module_out_path = module_output_path
     sources = [
-      "tests/Ltest-bt.c",
-      "tests/dummy_backtrace.c",
-      "tests/ident.c",
+      "libunwind/test/Ltest-bt.c",
+      "libunwind/test/dummy_backtrace.c",
+      "libunwind/test/ident.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -915,12 +907,12 @@ if (!defined(ohos_lite)) {
   ohos_unittest("test_ptrace_misc") {
     module_out_path = module_output_path
     sources = [
-      "tests/ident.c",
-      "tests/test-ptrace-misc.c",
+      "libunwind/test/ident.c",
+      "libunwind/test/test-ptrace-misc.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -930,10 +922,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Ltest_nomalloc") {
     module_out_path = module_output_path
-    sources = [ "tests/Ltest-nomalloc.c" ]
+    sources = [ "libunwind/test/Ltest-nomalloc.c" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -943,10 +935,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Ltest_nocalloc") {
     module_out_path = module_output_path
-    sources = [ "tests/Ltest-nocalloc.c" ]
+    sources = [ "libunwind/test/Ltest-nocalloc.c" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -957,13 +949,13 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Gtest_trace") {
     module_out_path = module_output_path
     sources = [
-      "tests/Gtest-trace.c",
-      "tests/dummy_backtrace.c",
-      "tests/ident.c",
+      "libunwind/test/Gtest-trace.c",
+      "libunwind/test/dummy_backtrace.c",
+      "libunwind/test/ident.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -974,13 +966,13 @@ if (!defined(ohos_lite)) {
   ohos_unittest("Ltest_trace") {
     module_out_path = module_output_path
     sources = [
-      "tests/Ltest-trace.c",
-      "tests/dummy_backtrace.c",
-      "tests/ident.c",
+      "libunwind/test/Ltest-trace.c",
+      "libunwind/test/dummy_backtrace.c",
+      "libunwind/test/ident.c",
     ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
@@ -990,10 +982,10 @@ if (!defined(ohos_lite)) {
 
   ohos_unittest("Ltest_mem_validate") {
     module_out_path = module_output_path
-    sources = [ "tests/Ltest-mem-validate.c" ]
+    sources = [ "libunwind/test/Ltest-mem-validate.c" ]
     include_dirs = [
-      "tests",
-      "include",
+      "libunwind/test",
+      "libunwind/include",
     ]
     configs = [ ":unwind_test" ]
     deps = [ ":libunwind" ]
