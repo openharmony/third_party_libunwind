@@ -274,10 +274,6 @@ remove_sources += libunwind_la_SOURCES_local_nounwind
 remove_sources += libunwind_dwarf_local_la_SOURCES
 remove_sources += ptrace_sources
 
-if (is_mingw) {
-  common_source += [ "libunwind/src/mingw/pal-single-threaded.c" ]
-}
-
 config("unwind_config_public") {
   include_dirs = [
     "libunwind/src",
@@ -350,10 +346,7 @@ config("unwind_config_remote_public") {
                                                 # host x64 build
   cflags += [ "-Wno-int-to-void-pointer-cast" ]
 
-  if (is_mingw) {
-    include_dirs += [ "libunwind/include/mingw" ]
-    cflags += [ "-DMINGW" ]
-  } else if (is_linux) {
+  if (is_linux) {
     cflags += [ "-g" ]  # we need debug info when it crash.
   }
 
