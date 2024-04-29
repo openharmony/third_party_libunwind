@@ -131,8 +131,7 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
-  return 0;
+  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val, 0, c->as_arg);
 }
 
 static inline int
@@ -140,8 +139,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
-  return 0;
+  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val, 1, c->as_arg);
 }
 
 #else /* !UNW_LOCAL_ONLY */
@@ -254,6 +252,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 #define tdep_getcontext_trace           unw_getcontext
 #define tdep_init_done                  UNW_OBJ(init_done)
+#define tdep_init_mem_validate          UNW_OBJ(init_mem_validate)
 #define tdep_init                       UNW_OBJ(init)
 #define arm_find_proc_info              UNW_OBJ(find_proc_info)
 #define arm_put_unwind_info             UNW_OBJ(put_unwind_info)
@@ -294,6 +293,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 extern atomic_bool tdep_init_done;
 
 extern void tdep_init (void);
+extern void tdep_init_mem_validate (void);
 extern int arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                                unw_proc_info_t *pi, int need_unwind_info,
                                void *arg);
