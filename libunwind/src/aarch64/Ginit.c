@@ -25,6 +25,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <errno.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -88,7 +89,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 #define PAGE_START(a)   ((a) & ~(PAGE_SIZE-1))
 
 static int mem_validate_pipe[2] = {-1, -1};
-
+pthread_mutex_t g_mutex;
 #ifdef HAVE_PIPE2
 static inline void
 do_pipe2 (int pipefd[2])
@@ -131,11 +132,16 @@ open_pipe (void)
 
 ALWAYS_INLINE
 static int
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+__attribute__((no_sanitize("address")))
+#endif
+#endif
 write_validate (void *addr)
 {
   int ret = -1;
   ssize_t bytes = 0;
-
+  pthread_mutex_lock(&g_mutex);
   do
     {
       char buf;
@@ -155,18 +161,13 @@ write_validate (void *addr)
        ret = write (mem_validate_pipe[1], addr, 1);
     }
   while ( errno == EINTR );
-
+  pthread_mutex_unlock(&g_mutex);
   return ret;
 }
 
 static int (*mem_validate_func) (void *addr, size_t len);
 static int msync_validate (void *addr, size_t len)
 {
-  if (msync (addr, len, MS_ASYNC) != 0)
-    {
-      return -1;
-    }
-
   return write_validate (addr);
 }
 
@@ -317,6 +318,11 @@ validate_mem (unw_word_t addr)
 }
 
 static int
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+__attribute__((no_sanitize("address")))
+#endif
+#endif
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
 {
@@ -329,8 +335,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     {
       /* validate address */
       const struct cursor *c = (const struct cursor *)arg;
-      if (likely (c != NULL) && unlikely (c->validate)
-          && unlikely (validate_mem (addr))) {
+      if (unlikely (validate_mem (addr))) {
         Debug (16, "mem[%016lx] -> invalid\n", addr);
         return -1;
       }

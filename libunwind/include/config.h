@@ -2,7 +2,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Block signals before mutex operations */
-#define CONFIG_BLOCK_SIGNALS /**/
+/* #undef CONFIG_BLOCK_SIGNALS */
 
 /* Enable Debug Frame */
 /* #undef CONFIG_DEBUG_FRAME */
@@ -10,14 +10,8 @@
 /* Support for Microsoft ABI extensions */
 /* #undef CONFIG_MSABI_SUPPORT */
 
-/* Define if the weak 'backtrace' symbol is provided. */
-#define CONFIG_WEAK_BACKTRACE 1
-
 /* Define to 1 if you want every memory access validated */
 #define CONSERVATIVE_CHECKS 1
-
-/* Define to 1 if you have the <asm/ptrace.h> header file. */
-#define HAVE_ASM_PTRACE_H 1
 
 /* Define to 1 if you have the <asm/ptrace_offsets.h> header file. */
 /* #undef HAVE_ASM_PTRACE_OFFSETS_H */
@@ -55,7 +49,7 @@
 
 /* Define to 1 if you have the declaration of `PT_CONTINUE', and to 0 if you
    don't. */
-#define HAVE_DECL_PT_CONTINUE 1
+#define HAVE_DECL_PT_CONTINUE 0
 
 /* Define to 1 if you have the declaration of `PT_GETFPREGS', and to 0 if you
    don't. */
@@ -63,7 +57,7 @@
 
 /* Define to 1 if you have the declaration of `PT_GETREGS', and to 0 if you
    don't. */
-#define HAVE_DECL_PT_GETREGS 1
+#define HAVE_DECL_PT_GETREGS 0
 
 /* Define to 1 if you have the declaration of `PT_IO', and to 0 if you don't.
    */
@@ -100,7 +94,7 @@
 #define HAVE_ENDIAN_H 1
 
 /* Define to 1 if you have the <execinfo.h> header file. */
-#define HAVE_EXECINFO_H 1
+/* #undef HAVE_EXECINFO_H */
 
 /* Define to 1 if you have the `getunwind' function. */
 /* #undef HAVE_GETUNWIND */
@@ -124,7 +118,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `mincore' function. */
-#define HAVE_MINCORE 1
+/* #undef HAVE_MINCORE */
 
 /* Define to 1 if you have the `pipe2' function. */
 #define HAVE_PIPE2 1
@@ -145,10 +139,10 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if `dlpi_subs' is a member of `struct dl_phdr_info'. */
-#define HAVE_STRUCT_DL_PHDR_INFO_DLPI_SUBS 1
+/* #undef HAVE_STRUCT_DL_PHDR_INFO_DLPI_SUBS */
 
 /* Define to 1 if the system has the type `struct elf_prstatus'. */
-#define HAVE_STRUCT_ELF_PRSTATUS 1
+/* #undef HAVE_STRUCT_ELF_PRSTATUS */
 
 /* Define to 1 if the system has the type `struct prstatus'. */
 /* #undef HAVE_STRUCT_PRSTATUS */
@@ -162,11 +156,8 @@
 /* Define to 1 if you have the <sys/link.h> header file. */
 /* #undef HAVE_SYS_LINK_H */
 
-/* Define to 1 if you have the <sys/param.h> header file. */
-#define HAVE_SYS_PARAM_H 1
-
 /* Define to 1 if you have the <sys/procfs.h> header file. */
-#define HAVE_SYS_PROCFS_H 1
+/* #undef HAVE_SYS_PROCFS_H */
 
 /* Define to 1 if you have the <sys/ptrace.h> header file. */
 #define HAVE_SYS_PTRACE_H 1
