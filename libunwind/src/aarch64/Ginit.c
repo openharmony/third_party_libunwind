@@ -29,6 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/syscall.h>
 #include <stdatomic.h>
 
 #include "unwind_i.h"
@@ -158,7 +159,8 @@ write_validate (void *addr)
 
   do
     {
-       ret = write (mem_validate_pipe[1], addr, 1);
+       /* use syscall insteadof write() so that ASAN does not complain */
+       ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
     }
   while ( errno == EINTR );
   pthread_mutex_unlock(&g_mutex);
