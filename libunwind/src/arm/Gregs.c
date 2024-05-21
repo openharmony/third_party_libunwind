@@ -35,24 +35,39 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_ARM_R15:
       if (write)
         c->dwarf.ip = *valp;            /* update the IP cache */
+      /* fall-through */
     case UNW_ARM_R0:
+      /* fall-through */
     case UNW_ARM_R1:
+      /* fall-through */
     case UNW_ARM_R2:
+      /* fall-through */
     case UNW_ARM_R3:
+      /* fall-through */
     case UNW_ARM_R4:
+      /* fall-through */
     case UNW_ARM_R5:
+      /* fall-through */
     case UNW_ARM_R6:
+      /* fall-through */
     case UNW_ARM_R7:
+      /* fall-through */
     case UNW_ARM_R8:
+      /* fall-through */
     case UNW_ARM_R9:
+      /* fall-through */
     case UNW_ARM_R10:
+      /* fall-through */
     case UNW_ARM_R11:
+      /* fall-through */
     case UNW_ARM_R12:
+      /* fall-through */
     case UNW_ARM_R14:
       loc = c->dwarf.loc[reg - UNW_ARM_R0];
       break;
 
     case UNW_ARM_R13:
+      /* fall-through */
     case UNW_ARM_CFA:
       if (write)
         return -UNW_EREADONLYREG;
