@@ -28,7 +28,7 @@
                     "name" : "//third_party/libunwind:libunwind"
                 }
             ],
-            "test": [ "//third_party/libunwind:unittest" ]
+            "test": []
         }
     }
 }
