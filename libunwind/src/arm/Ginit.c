@@ -121,14 +121,7 @@ open_pipe (void)
   do_pipe2 (mem_validate_pipe);
 }
 
-ALWAYS_INLINE
-static int
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-__attribute__((no_sanitize("address")))
-#endif
-#endif
-write_validate (void *addr)
+ALWAYS_INLINE NO_SANITIZE static int write_validate (void *addr)
 {
   int ret = -1;
   ssize_t bytes = 0;
@@ -314,8 +307,7 @@ validate_mem (unw_word_t addr)
   return 0;
 }
 
-static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+NO_SANITIZE static int access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
 {
   /* validate address */
