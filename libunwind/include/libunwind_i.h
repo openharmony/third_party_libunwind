@@ -167,6 +167,7 @@ target_is_big_endian()
 #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
 
 #define unwi_full_mask    UNWI_ARCH_OBJ(full_mask)
+#define NO_SANITIZE __attribute__((no_sanitize("address"), no_sanitize("hwaddress")))
 
 /* Type of a mask that can be used to inhibit preemption.  At the
    userlevel, preemption is caused by signals and hence sigset_t is
