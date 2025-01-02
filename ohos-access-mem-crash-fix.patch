@@ -1,0 +1,505 @@
+diff --git a/include/libunwind_i.h b/include/libunwind_i.h
+index 97422679..bc529810 100644
+--- a/include/libunwind_i.h
++++ b/include/libunwind_i.h
+@@ -167,6 +167,7 @@ target_is_big_endian()
+ #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
+
+ #define unwi_full_mask    UNWI_ARCH_OBJ(full_mask)
++#define NO_SANITIZE __attribute__((no_sanitize("address"), no_sanitize("hwaddress")))
+
+ /* Type of a mask that can be used to inhibit preemption.  At the
+    userlevel, preemption is caused by signals and hence sigset_t is
+diff --git a/include/tdep-aarch64/libunwind_i.h b/include/tdep-aarch64/libunwind_i.h
+index d96833a2..3d57587b 100644
+--- a/include/tdep-aarch64/libunwind_i.h
++++ b/include/tdep-aarch64/libunwind_i.h
+@@ -148,8 +148,7 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+ {
+   if (!DWARF_GET_LOC (loc))
+     return -1;
+-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
+-  return 0;
++  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val, 0, c->as_arg);
+ }
+
+ static inline int
+@@ -157,8 +156,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+ {
+   if (!DWARF_GET_LOC (loc))
+     return -1;
+-  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
+-  return 0;
++  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val, 1, c->as_arg);
+ }
+
+ #else /* !UNW_LOCAL_ONLY */
+diff --git a/include/tdep-arm/libunwind_i.h b/include/tdep-arm/libunwind_i.h
+index 88ebfb06..c19ed523 100644
+--- a/include/tdep-arm/libunwind_i.h
++++ b/include/tdep-arm/libunwind_i.h
+@@ -131,8 +131,7 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+ {
+   if (!DWARF_GET_LOC (loc))
+     return -1;
+-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
+-  return 0;
++  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val, 0, c->as_arg);
+ }
+
+ static inline int
+@@ -140,8 +139,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+ {
+   if (!DWARF_GET_LOC (loc))
+     return -1;
+-  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
+-  return 0;
++  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val, 1, c->as_arg);
+ }
+
+ #else /* !UNW_LOCAL_ONLY */
+@@ -254,6 +252,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+
+ #define tdep_getcontext_trace           unw_getcontext
+ #define tdep_init_done                  UNW_OBJ(init_done)
++#define tdep_init_mem_validate          UNW_OBJ(init_mem_validate)
+ #define tdep_init                       UNW_OBJ(init)
+ #define arm_find_proc_info              UNW_OBJ(find_proc_info)
+ #define arm_put_unwind_info             UNW_OBJ(put_unwind_info)
+@@ -294,6 +293,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+ extern atomic_bool tdep_init_done;
+
+ extern void tdep_init (void);
++extern void tdep_init_mem_validate (void);
+ extern int arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+                                unw_proc_info_t *pi, int need_unwind_info,
+                                void *arg);
+diff --git a/src/aarch64/Ginit.c b/src/aarch64/Ginit.c
+index 2b08feb3..58ff370a 100644
+--- a/src/aarch64/Ginit.c
++++ b/src/aarch64/Ginit.c
+@@ -25,9 +25,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+ #include <errno.h>
++#include <pthread.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/mman.h>
++#include <sys/syscall.h>
+ #include <stdatomic.h>
+
+ #include "unwind_i.h"
+@@ -88,7 +90,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+ #define PAGE_START(a)   ((a) & ~(PAGE_SIZE-1))
+
+ static int mem_validate_pipe[2] = {-1, -1};
+-
++pthread_mutex_t g_mutex;
+ #ifdef HAVE_PIPE2
+ static inline void
+ do_pipe2 (int pipefd[2])
+@@ -129,13 +131,11 @@ open_pipe (void)
+   do_pipe2 (mem_validate_pipe);
+ }
+
+-ALWAYS_INLINE
+-static int
+-write_validate (void *addr)
++ALWAYS_INLINE NO_SANITIZE static int write_validate (void *addr)
+ {
+   int ret = -1;
+   ssize_t bytes = 0;
+-
++  pthread_mutex_lock(&g_mutex);
+   do
+     {
+       char buf;
+@@ -152,21 +152,17 @@ write_validate (void *addr)
+
+   do
+     {
+-       ret = write (mem_validate_pipe[1], addr, 1);
++       /* use syscall insteadof write() so that ASAN does not complain */
++       ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
+     }
+   while ( errno == EINTR );
+-
++  pthread_mutex_unlock(&g_mutex);
+   return ret;
+ }
+
+ static int (*mem_validate_func) (void *addr, size_t len);
+ static int msync_validate (void *addr, size_t len)
+ {
+-  if (msync (addr, len, MS_ASYNC) != 0)
+-    {
+-      return -1;
+-    }
+-
+   return write_validate (addr);
+ }
+
+@@ -316,8 +312,7 @@ validate_mem (unw_word_t addr)
+   return 0;
+ }
+
+-static int
+-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
++NO_SANITIZE static int access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
+   if (unlikely (write))
+@@ -329,8 +324,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+     {
+       /* validate address */
+       const struct cursor *c = (const struct cursor *)arg;
+-      if (likely (c != NULL) && unlikely (c->validate)
+-          && unlikely (validate_mem (addr))) {
++      if (unlikely (validate_mem (addr))) {
+         Debug (16, "mem[%016lx] -> invalid\n", addr);
+         return -1;
+       }
+diff --git a/src/arm/Gglobal.c b/src/arm/Gglobal.c
+index 0700f930..efb3cce5 100644
+--- a/src/arm/Gglobal.c
++++ b/src/arm/Gglobal.c
+@@ -61,6 +61,7 @@ tdep_init (void)
+     dwarf_init ();
+
+ #ifndef UNW_REMOTE_ONLY
++    tdep_init_mem_validate ();
+     arm_local_addr_space_init ();
+ #endif
+     atomic_store(&tdep_init_done, 1); /* signal that we're initialized... */
+diff --git a/src/arm/Ginit.c b/src/arm/Ginit.c
+index 0bac0d72..0c67a62c 100644
+--- a/src/arm/Ginit.c
++++ b/src/arm/Ginit.c
+@@ -22,8 +22,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
++#include <errno.h>
++#include <pthread.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <sys/mman.h>
++#include <sys/syscall.h>
++#include <stdatomic.h>
+
+ #include "unwind_i.h"
+
+@@ -74,41 +79,161 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+ #define PAGE_SIZE 4096
+ #define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
+
+-/* Cache of already validated addresses */
+-#define NLGA 4
+-static unw_word_t last_good_addr[NLGA];
+-static int lga_victim;
++static int mem_validate_pipe[2] = {-1, -1};
++pthread_mutex_t g_mutex;
++#ifdef HAVE_PIPE2
++static inline void
++do_pipe2 (int pipefd[2])
++{
++  pipe2 (pipefd, O_CLOEXEC | O_NONBLOCK);
++}
++#else
++static inline void
++set_pipe_flags (int fd)
++{
++  int fd_flags = fcntl (fd, F_GETFD, 0);
++  int status_flags = fcntl (fd, F_GETFL, 0);
+
+-static int
+-validate_mem (unw_word_t addr)
++  fd_flags |= FD_CLOEXEC;
++  fcntl (fd, F_SETFD, fd_flags);
++
++  status_flags |= O_NONBLOCK;
++  fcntl (fd, F_SETFL, status_flags);
++}
++
++static inline void
++do_pipe2 (int pipefd[2])
+ {
+-  int i, victim;
+-  size_t len;
++  pipe (pipefd);
++  set_pipe_flags(pipefd[0]);
++  set_pipe_flags(pipefd[1]);
++}
++#endif
+
+-  if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
+-    len = PAGE_SIZE;
+-  else
+-    len = PAGE_SIZE * 2;
++static inline void
++open_pipe (void)
++{
++  if (mem_validate_pipe[0] != -1)
++    close (mem_validate_pipe[0]);
++  if (mem_validate_pipe[1] != -1)
++    close (mem_validate_pipe[1]);
+
+-  addr = PAGE_START(addr);
++  do_pipe2 (mem_validate_pipe);
++}
+
+-  if (addr == 0)
++ALWAYS_INLINE NO_SANITIZE static int write_validate (void *addr)
++{
++  int ret = -1;
++  ssize_t bytes = 0;
++  pthread_mutex_lock(&g_mutex);
++
++  do
++    {
++      char buf;
++      bytes = syscall(SYS_read, mem_validate_pipe[0], &buf, 1);
++    }
++  while ( errno == EINTR );
++
++  int valid_read = (bytes > 0 || errno == EAGAIN || errno == EWOULDBLOCK);
++  if (!valid_read)
++    {
++      // re-open closed pipe
++      open_pipe ();
++    }
++
++  do
++    {
++       ret = syscall(SYS_write, mem_validate_pipe[1], addr, 1);
++    }
++  while ( errno == EINTR );
++  pthread_mutex_unlock(&g_mutex);
++  return ret;
++}
++
++static int (*mem_validate_func) (void *addr, size_t len);
++static int msync_validate (void *addr, size_t len)
++{
++  if (msync (addr, len, MS_ASYNC) != 0)
++    {
++      return -1;
++    }
++
++  return write_validate (addr);
++}
++
++#ifdef HAVE_MINCORE
++static int mincore_validate (void *addr, size_t len)
++{
++  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
++
++  /* mincore could fail with EAGAIN but we conservatively return -1
++     instead of looping. */
++  if (mincore (addr, len, (unsigned char *)mvec) != 0)
++    {
+     return -1;
++    }
+
++  return write_validate (addr);
++}
++#endif
++
++/* Initialise memory validation method. On linux kernels <2.6.21,
++   mincore() returns incorrect value for MAP_PRIVATE mappings,
++   such as stacks. If mincore() was available at compile time,
++   check if we can actually use it. If not, use msync() instead. */
++HIDDEN void
++tdep_init_mem_validate (void)
++{
++  open_pipe ();
++
++#ifdef HAVE_MINCORE
++  unsigned char present = 1;
++  unw_word_t addr = PAGE_START((unw_word_t)&present);
++  unsigned char mvec[1];
++  int ret;
++  while ((ret = mincore ((void*)addr, PAGE_SIZE, (unsigned char *)mvec)) == -1 &&
++         errno == EAGAIN) {}
++  if (ret == 0)
++    {
++      Debug(1, "using mincore to validate memory\n");
++      mem_validate_func = mincore_validate;
++    }
++  else
++#endif
++    {
++      Debug(1, "using msync to validate memory\n");
++      mem_validate_func = msync_validate;
++    }
++}
++
++/* Cache of already validated addresses */
++#define NLGA 4
++#if defined(HAVE___CACHE_PER_THREAD) && HAVE___CACHE_PER_THREAD
++// thread-local variant
++static _Thread_local unw_word_t last_good_addr[NLGA];
++static _Thread_local int lga_victim;
++
++static int
++is_cached_valid_mem(unw_word_t addr)
++{
++  int i;
+   for (i = 0; i < NLGA; i++)
+     {
+-      if (last_good_addr[i] && (addr == last_good_addr[i]))
++      if (addr == last_good_addr[i])
++        return 1;
++    }
+       return 0;
+     }
+
+-  if (msync ((void *) addr, len, MS_ASYNC) == -1)
+-    return -1;
+-
++static void
++cache_valid_mem(unw_word_t addr)
++{
++  int i, victim;
+   victim = lga_victim;
+   for (i = 0; i < NLGA; i++) {
+-    if (!last_good_addr[victim]) {
+-      last_good_addr[victim++] = addr;
+-      return 0;
++    if (last_good_addr[victim] == 0) {
++      last_good_addr[victim] = addr;
++      return;
+     }
+     victim = (victim + 1) % NLGA;
+   }
+@@ -117,12 +242,72 @@ validate_mem (unw_word_t addr)
+   last_good_addr[victim] = addr;
+   victim = (victim + 1) % NLGA;
+   lga_victim = victim;
++}
++
++#else
++// global, thread safe variant
++static _Atomic unw_word_t last_good_addr[NLGA];
++static _Atomic int lga_victim;
+
++static int
++is_cached_valid_mem(unw_word_t addr)
++{
++  int i;
++  for (i = 0; i < NLGA; i++)
++    {
++      if (addr == atomic_load(&last_good_addr[i]))
++        return 1;
++    }
+   return 0;
+ }
+
++static void
++cache_valid_mem(unw_word_t addr)
++{
++  int i, victim;
++  victim = atomic_load(&lga_victim);
++  unw_word_t zero = 0;
++  for (i = 0; i < NLGA; i++) {
++    if (atomic_compare_exchange_strong(&last_good_addr[victim], &zero, addr)) {
++      return;
++    }
++    victim = (victim + 1) % NLGA;
++  }
++
++  /* All slots full. Evict the victim. */
++  atomic_store(&last_good_addr[victim], addr);
++    victim = (victim + 1) % NLGA;
++  atomic_store(&lga_victim, victim);
++}
++#endif
++
+ static int
+-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
++validate_mem (unw_word_t addr)
++{
++  size_t len;
++
++  if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
++    len = PAGE_SIZE;
++  else
++    len = PAGE_SIZE * 2;
++
++  addr = PAGE_START(addr);
++
++  if (addr == 0)
++    return -1;
++
++  if (is_cached_valid_mem(addr))
++    return 0;
++
++  if (mem_validate_func ((void *) addr, len) == -1)
++    return -1;
++
++  cache_valid_mem(addr);
++
++  return 0;
++}
++
++NO_SANITIZE static int access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
+   /* validate address */
+diff --git a/src/arm/Gregs.c b/src/arm/Gregs.c
+index 0d52f0b2..5d704e94 100644
+--- a/src/arm/Gregs.c
++++ b/src/arm/Gregs.c
+@@ -35,24 +35,39 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
+     case UNW_ARM_R15:
+       if (write)
+         c->dwarf.ip = *valp;            /* update the IP cache */
++      /* fall-through */
+     case UNW_ARM_R0:
++      /* fall-through */
+     case UNW_ARM_R1:
++      /* fall-through */
+     case UNW_ARM_R2:
++      /* fall-through */
+     case UNW_ARM_R3:
++      /* fall-through */
+     case UNW_ARM_R4:
++      /* fall-through */
+     case UNW_ARM_R5:
++      /* fall-through */
+     case UNW_ARM_R6:
++      /* fall-through */
+     case UNW_ARM_R7:
++      /* fall-through */
+     case UNW_ARM_R8:
++      /* fall-through */
+     case UNW_ARM_R9:
++      /* fall-through */
+     case UNW_ARM_R10:
++      /* fall-through */
+     case UNW_ARM_R11:
++      /* fall-through */
+     case UNW_ARM_R12:
++      /* fall-through */
+     case UNW_ARM_R14:
+       loc = c->dwarf.loc[reg - UNW_ARM_R0];
+       break;
+
+     case UNW_ARM_R13:
++      /* fall-through */
+     case UNW_ARM_CFA:
+       if (write)
+         return -UNW_EREADONLYREG;
+diff --git a/src/arm/Gtrace.c b/src/arm/Gtrace.c
+index 51fc281d..fb6e9eb3 100644
+--- a/src/arm/Gtrace.c
++++ b/src/arm/Gtrace.c
+@@ -479,6 +479,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
+     case UNW_ARM_FRAME_GUESSED:
+       /* Fall thru to standard processing after forcing validation. */
+       c->validate = 1;
++      /* fall-through */
+
+     case UNW_ARM_FRAME_STANDARD:
+       /* Advance standard traceable frame. */
