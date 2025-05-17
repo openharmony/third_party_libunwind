@@ -1,11 +1,11 @@
 [
   {
-    "Name": "openEuler:libunwind",
+    "Name": "libunwind",
     "License": "MIT License",
     "License File": "LICENSE",
-    "Version Number": "1.6.2-7.oe2203sp3",
+    "Version Number": "1.8.1",
     "Owner": "zengzhi5@huawei.com",
-    "Upstream URL": "http://www.openeuler.org",
+    "Upstream URL": "https://github.com/libunwind/libunwind.git",
     "Description": "a portable and efficient C programming interface (API) to determine the call-chain of a program."
   }
 ]

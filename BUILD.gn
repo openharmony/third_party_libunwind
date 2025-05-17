@@ -16,7 +16,7 @@ if (defined(ohos_lite)) {
 } else {
   import("//build/ohos.gni")
 }
-libunwind_code_dir = "${target_gen_dir}/libunwind-1.6.2"
+libunwind_code_dir = "${target_gen_dir}/libunwind-1.8.1"
 common_source = [
   "$libunwind_code_dir/src/dwarf/Gexpr.c",
   "$libunwind_code_dir/src/dwarf/Gfde.c",
@@ -36,6 +36,7 @@ common_source = [
   "$libunwind_code_dir/src/mi/dyn-info-list.c",
   "$libunwind_code_dir/src/mi/dyn-register.c",
   "$libunwind_code_dir/src/mi/flush_cache.c",
+  "$libunwind_code_dir/src/mi/Gaddress_validator.c",
   "$libunwind_code_dir/src/mi/Gdestroy_addr_space.c",
   "$libunwind_code_dir/src/mi/Gdyn-extract.c",
   "$libunwind_code_dir/src/mi/Gdyn-remote.c",
@@ -74,6 +75,7 @@ common_source = [
   "$libunwind_code_dir/src/ptrace/_UPT_destroy.c",
   "$libunwind_code_dir/src/ptrace/_UPT_find_proc_info.c",
   "$libunwind_code_dir/src/ptrace/_UPT_get_dyn_info_list_addr.c",
+  "$libunwind_code_dir/src/ptrace/_UPT_get_elf_filename.c",
   "$libunwind_code_dir/src/ptrace/_UPT_get_proc_name.c",
   "$libunwind_code_dir/src/ptrace/_UPT_put_unwind_info.c",
   "$libunwind_code_dir/src/ptrace/_UPT_reg_offset.c",
@@ -128,6 +130,7 @@ arm64_source = [
   "$libunwind_code_dir/src/aarch64/Ginit.c",
   "$libunwind_code_dir/src/aarch64/Ginit_local.c",
   "$libunwind_code_dir/src/aarch64/Ginit_remote.c",
+  "$libunwind_code_dir/src/aarch64/Gos-linux.c",
   "$libunwind_code_dir/src/aarch64/Gis_signal_frame.c",
   "$libunwind_code_dir/src/aarch64/Gregs.c",
   "$libunwind_code_dir/src/aarch64/Gresume.c",
@@ -141,6 +144,7 @@ arm64_source = [
   "$libunwind_code_dir/src/aarch64/Linit.c",
   "$libunwind_code_dir/src/aarch64/Linit_local.c",
   "$libunwind_code_dir/src/aarch64/Linit_remote.c",
+  "$libunwind_code_dir/src/aarch64/Los-linux.c",
   "$libunwind_code_dir/src/aarch64/Lis_signal_frame.c",
   "$libunwind_code_dir/src/aarch64/Lregs.c",
   "$libunwind_code_dir/src/aarch64/Lresume.c",
@@ -211,6 +215,7 @@ riscv64_source = [
   "$libunwind_code_dir/src/riscv/Linit.c",
   "$libunwind_code_dir/src/riscv/Linit_local.c",
   "$libunwind_code_dir/src/riscv/Linit_remote.c",
+  "$libunwind_code_dir/src/riscv/Los-linux.c",
   "$libunwind_code_dir/src/riscv/Lis_signal_frame.c",
   "$libunwind_code_dir/src/riscv/Lregs.c",
   "$libunwind_code_dir/src/riscv/Lreg_states_iterate.c",
@@ -244,6 +249,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/mi/dyn-info-list.c",
     "$libunwind_code_dir/src/mi/dyn-register.c",
     "$libunwind_code_dir/src/mi/flush_cache.c",
+    "$libunwind_code_dir/src/mi/Gaddress_validator.c",
     "$libunwind_code_dir/src/mi/Gdestroy_addr_space.c",
     "$libunwind_code_dir/src/mi/Gdyn-extract.c",
     "$libunwind_code_dir/src/mi/Gdyn-remote.c",
@@ -281,6 +287,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/ptrace/_UPT_create.c",
     "$libunwind_code_dir/src/ptrace/_UPT_destroy.c",
     "$libunwind_code_dir/src/ptrace/_UPT_find_proc_info.c",
+    "$libunwind_code_dir/src/ptrace/_UPT_get_elf_filename.c",
     "$libunwind_code_dir/src/ptrace/_UPT_get_dyn_info_list_addr.c",
     "$libunwind_code_dir/src/ptrace/_UPT_get_proc_name.c",
     "$libunwind_code_dir/src/ptrace/_UPT_put_unwind_info.c",
@@ -328,6 +335,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/aarch64/Ginit.c",
     "$libunwind_code_dir/src/aarch64/Ginit_local.c",
     "$libunwind_code_dir/src/aarch64/Ginit_remote.c",
+    "$libunwind_code_dir/src/aarch64/Gos-linux.c",
     "$libunwind_code_dir/src/aarch64/Gis_signal_frame.c",
     "$libunwind_code_dir/src/aarch64/Gregs.c",
     "$libunwind_code_dir/src/aarch64/Gresume.c",
@@ -341,6 +349,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/aarch64/Linit.c",
     "$libunwind_code_dir/src/aarch64/Linit_local.c",
     "$libunwind_code_dir/src/aarch64/Linit_remote.c",
+    "$libunwind_code_dir/src/aarch64/Los-linux.c",
     "$libunwind_code_dir/src/aarch64/Lis_signal_frame.c",
     "$libunwind_code_dir/src/aarch64/Lregs.c",
     "$libunwind_code_dir/src/aarch64/Lresume.c",
@@ -403,6 +412,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/riscv/Linit.c",
     "$libunwind_code_dir/src/riscv/Linit_local.c",
     "$libunwind_code_dir/src/riscv/Linit_remote.c",
+    "$libunwind_code_dir/src/riscv/Los-linux.c",
     "$libunwind_code_dir/src/riscv/Lis_signal_frame.c",
     "$libunwind_code_dir/src/riscv/Lregs.c",
     "$libunwind_code_dir/src/riscv/Lreg_states_iterate.c",
@@ -414,7 +424,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/riscv/siglongjmp.S",
   ]
 
-  inputs = [ "//third_party/libunwind/libunwind-1.6.2.tar.gz" ]
+  inputs = [ "//third_party/libunwind/libunwind-1.8.1.tar.gz" ]
   libunwind_path = rebase_path("${target_gen_dir}", root_build_dir)
   libunwind_source_path = rebase_path("//third_party/libunwind", root_build_dir)
   args = [
@@ -424,87 +434,6 @@ action("libunwind_action") {
     "$libunwind_source_path",
   ]
 }
-
-if ("${target_cpu}" == "arm") {
-  arm_source_local = [
-    "$libunwind_code_dir/src/arm/Lcreate_addr_space.c",
-    "$libunwind_code_dir/src/arm/Lex_tables.c",
-    "$libunwind_code_dir/src/arm/Lget_proc_info.c",
-    "$libunwind_code_dir/src/arm/Lget_save_loc.c",
-    "$libunwind_code_dir/src/arm/Lglobal.c",
-    "$libunwind_code_dir/src/arm/Linit.c",
-    "$libunwind_code_dir/src/arm/Linit_local.c",
-    "$libunwind_code_dir/src/arm/Linit_remote.c",
-    "$libunwind_code_dir/src/arm/Los-linux.c",
-    "$libunwind_code_dir/src/arm/Lregs.c",
-    "$libunwind_code_dir/src/arm/Lresume.c",
-    "$libunwind_code_dir/src/arm/Lstash_frame.c",
-    "$libunwind_code_dir/src/arm/Lstep.c",
-    "$libunwind_code_dir/src/arm/Ltrace.c",
-  ]
-} else if ("${target_cpu}" == "arm64") {
-  arm64_source_local = [
-    "$libunwind_code_dir/src/aarch64/Lcreate_addr_space.c",
-    "$libunwind_code_dir/src/aarch64/Lget_proc_info.c",
-    "$libunwind_code_dir/src/aarch64/Lget_save_loc.c",
-    "$libunwind_code_dir/src/aarch64/Lglobal.c",
-    "$libunwind_code_dir/src/aarch64/Linit.c",
-    "$libunwind_code_dir/src/aarch64/Linit_local.c",
-    "$libunwind_code_dir/src/aarch64/Linit_remote.c",
-    "$libunwind_code_dir/src/aarch64/Lis_signal_frame.c",
-    "$libunwind_code_dir/src/aarch64/Lregs.c",
-    "$libunwind_code_dir/src/aarch64/Lresume.c",
-    "$libunwind_code_dir/src/aarch64/Lstash_frame.c",
-    "$libunwind_code_dir/src/aarch64/Lstep.c",
-    "$libunwind_code_dir/src/aarch64/Ltrace.c",
-  ]
-} else if ("${target_cpu}" == "riscv64") {
-  riscv64_source_local = [
-    "$libunwind_code_dir/src/riscv/Lcreate_addr_space.c",
-    "$libunwind_code_dir/src/riscv/Lget_proc_info.c",
-    "$libunwind_code_dir/src/riscv/Lget_save_loc.c",
-    "$libunwind_code_dir/src/riscv/Lglobal.c",
-    "$libunwind_code_dir/src/riscv/Linit.c",
-    "$libunwind_code_dir/src/riscv/Linit_local.c",
-    "$libunwind_code_dir/src/riscv/Linit_remote.c",
-    "$libunwind_code_dir/src/riscv/Lis_signal_frame.c",
-    "$libunwind_code_dir/src/riscv/Lreg_states_iterate.c",
-    "$libunwind_code_dir/src/riscv/Lregs.c",
-    "$libunwind_code_dir/src/riscv/Lresume.c",
-    "$libunwind_code_dir/src/riscv/Lstep.c",
-  ]
-} else if ("${target_cpu}" == "x64" || "${target_cpu}" == "x86_64") {
-  x64_source_local = [
-    "$libunwind_code_dir/src/x86_64/Lcreate_addr_space.c",
-    "$libunwind_code_dir/src/x86_64/Lget_proc_info.c",
-    "$libunwind_code_dir/src/x86_64/Lget_save_loc.c",
-    "$libunwind_code_dir/src/x86_64/Lglobal.c",
-    "$libunwind_code_dir/src/x86_64/Linit.c",
-    "$libunwind_code_dir/src/x86_64/Linit_local.c",
-    "$libunwind_code_dir/src/x86_64/Linit_remote.c",
-    "$libunwind_code_dir/src/x86_64/Los-linux.c",
-    "$libunwind_code_dir/src/x86_64/Lregs.c",
-    "$libunwind_code_dir/src/x86_64/Lresume.c",
-    "$libunwind_code_dir/src/x86_64/Lstash_frame.c",
-    "$libunwind_code_dir/src/x86_64/Lstep.c",
-    "$libunwind_code_dir/src/x86_64/Ltrace.c",
-  ]
-}
-
-libunwind_la_SOURCES_local = [
-  "$libunwind_code_dir/src/mi/Ldyn-extract.c",
-  "$libunwind_code_dir/src/mi/Lfind_dynamic_proc_info.c",
-  "$libunwind_code_dir/src/mi/Lget_proc_info_by_ip.c",
-  "$libunwind_code_dir/src/mi/Lget_proc_name.c",
-  "$libunwind_code_dir/src/mi/Lput_dynamic_unwind_info.c",
-  "$libunwind_code_dir/src/mi/Ldestroy_addr_space.c",
-  "$libunwind_code_dir/src/mi/Lget_reg.c",
-  "$libunwind_code_dir/src/mi/Lset_reg.c",
-  "$libunwind_code_dir/src/mi/Lget_fpreg.c",
-  "$libunwind_code_dir/src/mi/Lset_fpreg.c",
-  "$libunwind_code_dir/src/mi/Lset_caching_policy.c",
-  "$libunwind_code_dir/src/mi/Lset_cache_size.c",
-]
 
 remove_sources = []
 
@@ -562,7 +491,7 @@ config("unwind_config_public") {
   include_dirs = [
     "$libunwind_code_dir/src",
     "$libunwind_code_dir/include",
-    get_label_info(":libunwind_action", "target_gen_dir") + "/libunwind-1.6.2",
+    get_label_info(":libunwind_action", "target_gen_dir") + "/libunwind-1.8.1",
   ]
 
   cflags = [
@@ -781,45 +710,6 @@ if (defined(ohos_lite)) {
     ]
     public_configs = [ ":unwind_config_public" ]
   }
-
-  static_library("libunwind_local") {
-    sources = common_source
-    public_configs = [ ":unwind_config_public" ]
-    public_configs += [ ":unwind_config_local_only" ]
-
-    if (target_cpu == "arm") {
-      sources += arm_source
-      sources -= arm_source_local
-      public_configs += [ ":unwind_config_arm" ]
-    } else if (target_cpu == "arm64") {
-      sources += arm64_source
-      sources -= arm64_source_local
-      public_configs += [ ":unwind_config_arm64" ]
-    } else if (target_cpu == "riscv64") {
-      sources += riscv64_source
-      sources -= riscv64_source_local
-      public_configs += [ ":unwind_config_riscv64" ]
-    } else if (target_cpu == "x64") {
-      sources += x64_source
-      sources -= x64_source_local
-      public_configs += [ ":unwind_config_x64" ]
-    } else if (target_cpu == "x86_64") {
-      sources += x64_source
-      sources -= x64_source_local
-      public_configs += [ ":unwind_config_x86_64" ]
-    }
-
-    sources -= libunwind_dwarf_local_la_SOURCES
-    sources -= libunwind_la_SOURCES_local
-    sources -= ptrace_sources
-    cflags = [
-      "-DHAS_ARK_FRAME",
-      "-DPARSE_BUILD_ID",
-      "-DUNW_LOCAL_ONLY",
-      "-DNO_RESERVE_CACHE",
-    ]
-    deps = [ ":libunwind_action" ]
-  }
 } else {
   ohos_source_set("unwind_source_arm") {
     configs = [ ":unwind_config_remote" ]
@@ -978,50 +868,6 @@ if (defined(ohos_lite)) {
       "platformsdk",
       "chipsetsdk",
     ]
-    subsystem_name = "thirdparty"
-    part_name = "libunwind"
-  }
-
-  # for internal use only, the interfaces may have compatible issue
-  ohos_static_library("libunwind_local") {
-    sources = common_source
-    public_configs = [ ":unwind_config_public" ]
-    public_configs += [ ":unwind_config_local_only" ]
-
-    if (target_cpu == "arm") {
-      sources += arm_source
-      sources -= arm_source_local
-      public_configs += [ ":unwind_config_arm" ]
-    } else if (target_cpu == "arm64") {
-      sources += arm64_source
-      sources -= arm64_source_local
-      public_configs += [ ":unwind_config_arm64" ]
-    } else if (target_cpu == "riscv64") {
-      sources += riscv64_source
-      sources -= riscv64_source_local
-      public_configs += [ ":unwind_config_riscv64" ]
-    } else if (target_cpu == "x64") {
-      sources += x64_source
-      sources -= x64_source_local
-      public_configs += [ ":unwind_config_x64" ]
-    } else if (target_cpu == "x86_64") {
-      sources += x64_source
-      sources -= x64_source_local
-      public_configs += [ ":unwind_config_x86_64" ]
-    }
-
-    sources -= libunwind_dwarf_local_la_SOURCES
-    sources -= libunwind_la_SOURCES_local
-    sources -= ptrace_sources
-    deps = [ ":libunwind_action" ]
-    cflags = [
-      "-DHAS_ARK_FRAME",
-      "-DPARSE_BUILD_ID",
-      "-DUNW_LOCAL_ONLY",
-      "-DNO_RESERVE_CACHE",
-      "-DHAVE_PIPE2",
-    ]
-
     subsystem_name = "thirdparty"
     part_name = "libunwind"
   }

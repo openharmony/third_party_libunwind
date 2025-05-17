@@ -1,0 +1,77 @@
+diff --git a/include/libunwind_i.h b/include/libunwind_i.h
+index 1dbcb6a8..eaee5dec 100644
+--- a/include/libunwind_i.h
++++ b/include/libunwind_i.h
+@@ -175,6 +175,7 @@ target_is_big_endian(void)
+ #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
+ 
+ #define unwi_full_mask    UNWI_ARCH_OBJ(full_mask)
++#define NO_SANITIZE __attribute__((no_sanitize("address"), no_sanitize("hwaddress")))
+ 
+ /* Type of a mask that can be used to inhibit preemption.  At the
+    userlevel, preemption is caused by signals and hence sigset_t is
+diff --git a/src/aarch64/Ginit.c b/src/aarch64/Ginit.c
+index 6986dbb6..10bec543 100644
+--- a/src/aarch64/Ginit.c
++++ b/src/aarch64/Ginit.c
+@@ -125,7 +125,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+ }
+ 
+ 
+-static int
++NO_SANITIZE static int
+ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
+diff --git a/src/arm/Ginit.c b/src/arm/Ginit.c
+index 20071fd0..91676e76 100644
+--- a/src/arm/Ginit.c
++++ b/src/arm/Ginit.c
+@@ -74,7 +74,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+ }
+ 
+ 
+-static int
++NO_SANITIZE static int
+ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
+diff --git a/src/mi/Gaddress_validator.c b/src/mi/Gaddress_validator.c
+index a81a0835..85bc4878 100644
+--- a/src/mi/Gaddress_validator.c
++++ b/src/mi/Gaddress_validator.c
+@@ -98,7 +98,7 @@ _open_pipe (void)
+  * process's address space and marked as readable. The read will force the page
+  * to be swapped in if it's not already there.
+  */
+-static bool
++NO_SANITIZE static bool
+ _write_validate (unw_word_t addr)
+ {
+   int ret = -1;
+diff --git a/src/x86/Ginit.c b/src/x86/Ginit.c
+index 956d8088..f576db8f 100644
+--- a/src/x86/Ginit.c
++++ b/src/x86/Ginit.c
+@@ -75,7 +75,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
+ }
+ 
+ 
+-static int
++NO_SANITIZE static int
+ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
+diff --git a/src/x86_64/Ginit.c b/src/x86_64/Ginit.c
+index ca3c0228..ed4ddd78 100644
+--- a/src/x86_64/Ginit.c
++++ b/src/x86_64/Ginit.c
+@@ -74,7 +74,7 @@ get_dyn_info_list_addr (unw_addr_space_t as UNUSED, unw_word_t *dyn_info_list_ad
+ }
+ 
+ 
+-static int
++NO_SANITIZE static int
+ access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val, int write,
+             void *arg)
+ {
