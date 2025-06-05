@@ -31,14 +31,9 @@ def untar_file(tar_file_path, extract_path):
 
 def move_file(src_path, dst_path):
     files = [
-        "0001-fix-byte_order_is_valid-function-logic.patch",
-        "backport-check-namespace.sh-adjust-aarch64-symbols.patch",
-        "backport-tests-run-coredump-unwind-Skip-test-if-no-coredump-h.patch",
-        "backport-aarch64-unw_step-validates-address-before-calling-dwarf_get.patch",
-        "backport-avoid-calling-printf-because-OE-glibc-2.34-used-mno-.patch",
-        "backport-fix-run-ptrace-mapper-test-case-failed.patch",
         "ohos-configure.patch",
-        "ohos-access-mem-crash-fix.patch"
+        "ohos-access-mem-no-sanitize.patch",
+        "ohos-fix-register-index-overflow.patch"
     ]
     for file in files:
         src_file = os.path.join(src_path, file)
@@ -59,14 +54,9 @@ def apply_patch(patch_file, target_dir):
 
 def do_patch(target_dir):
     patch_file = [
-        "0001-fix-byte_order_is_valid-function-logic.patch",
-        "backport-check-namespace.sh-adjust-aarch64-symbols.patch",
-        "backport-tests-run-coredump-unwind-Skip-test-if-no-coredump-h.patch",
-        "backport-aarch64-unw_step-validates-address-before-calling-dwarf_get.patch",
-        "backport-avoid-calling-printf-because-OE-glibc-2.34-used-mno-.patch",
-        "backport-fix-run-ptrace-mapper-test-case-failed.patch",
         "ohos-configure.patch",
-        "ohos-access-mem-crash-fix.patch"
+        "ohos-access-mem-no-sanitize.patch",
+        "ohos-fix-register-index-overflow.patch"
     ]
 
     for patch in patch_file:
@@ -78,8 +68,8 @@ def main():
     libunwind_path.add_argument('--gen-dir', help='generate path of log', required=True)
     libunwind_path.add_argument('--source-dir', help='generate path of log', required=True)
     args = libunwind_path.parse_args()
-    tar_file_path = os.path.join(args.source_dir, "libunwind-1.6.2.tar.gz")
-    target_dir = os.path.join(args.gen_dir, "libunwind-1.6.2")
+    tar_file_path = os.path.join(args.source_dir, "libunwind-1.8.1.tar.gz")
+    target_dir = os.path.join(args.gen_dir, "libunwind-1.8.1")
 
     untar_file(tar_file_path, args.gen_dir)
     move_file(args.source_dir, target_dir)
