@@ -22,7 +22,7 @@
             "third_party": []
         },
         "build": {
-            "sub_component": [],
+            "sub_component": ["//third_party/libunwind:libunwind"],
             "inner_kits": [
                 {
                     "name" : "//third_party/libunwind:libunwind"
