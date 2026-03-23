@@ -68,8 +68,8 @@ def main():
     libunwind_path.add_argument('--gen-dir', help='generate path of log', required=True)
     libunwind_path.add_argument('--source-dir', help='generate path of log', required=True)
     args = libunwind_path.parse_args()
-    tar_file_path = os.path.join(args.source_dir, "libunwind-1.8.1.tar.gz")
-    target_dir = os.path.join(args.gen_dir, "libunwind-1.8.1")
+    tar_file_path = os.path.join(args.source_dir, "libunwind-1.8.3.tar.gz")
+    target_dir = os.path.join(args.gen_dir, "libunwind-1.8.3")
 
     untar_file(tar_file_path, args.gen_dir)
     move_file(args.source_dir, target_dir)
