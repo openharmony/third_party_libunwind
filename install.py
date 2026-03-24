@@ -33,7 +33,6 @@ def move_file(src_path, dst_path):
     files = [
         "ohos-configure.patch",
         "ohos-access-mem-no-sanitize.patch",
-        "ohos-fix-register-index-overflow.patch"
     ]
     for file in files:
         src_file = os.path.join(src_path, file)
@@ -56,7 +55,6 @@ def do_patch(target_dir):
     patch_file = [
         "ohos-configure.patch",
         "ohos-access-mem-no-sanitize.patch",
-        "ohos-fix-register-index-overflow.patch"
     ]
 
     for patch in patch_file:
