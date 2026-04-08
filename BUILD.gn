@@ -16,7 +16,7 @@ if (defined(ohos_lite)) {
 } else {
   import("//build/ohos.gni")
 }
-libunwind_code_dir = "${target_gen_dir}/libunwind-1.8.1"
+libunwind_code_dir = "${target_gen_dir}/libunwind-1.8.3"
 common_source = [
   "$libunwind_code_dir/src/dwarf/Gexpr.c",
   "$libunwind_code_dir/src/dwarf/Gfde.c",
@@ -76,6 +76,7 @@ common_source = [
   "$libunwind_code_dir/src/ptrace/_UPT_find_proc_info.c",
   "$libunwind_code_dir/src/ptrace/_UPT_get_dyn_info_list_addr.c",
   "$libunwind_code_dir/src/ptrace/_UPT_get_elf_filename.c",
+  "$libunwind_code_dir/src/ptrace/_UPT_ptrauth_insn_mask.c",
   "$libunwind_code_dir/src/ptrace/_UPT_get_proc_name.c",
   "$libunwind_code_dir/src/ptrace/_UPT_put_unwind_info.c",
   "$libunwind_code_dir/src/ptrace/_UPT_reg_offset.c",
@@ -123,6 +124,7 @@ arm_source = [
 ]
 
 arm64_source = [
+  "$libunwind_code_dir/src/aarch64/Gstrip_ptrauth_insn_mask.c",
   "$libunwind_code_dir/src/aarch64/Gcreate_addr_space.c",
   "$libunwind_code_dir/src/aarch64/Gget_proc_info.c",
   "$libunwind_code_dir/src/aarch64/Gget_save_loc.c",
@@ -137,6 +139,7 @@ arm64_source = [
   "$libunwind_code_dir/src/aarch64/Gstash_frame.c",
   "$libunwind_code_dir/src/aarch64/Gstep.c",
   "$libunwind_code_dir/src/aarch64/Gtrace.c",
+  "$libunwind_code_dir/src/aarch64/Lstrip_ptrauth_insn_mask.c",
   "$libunwind_code_dir/src/aarch64/Lcreate_addr_space.c",
   "$libunwind_code_dir/src/aarch64/Lget_proc_info.c",
   "$libunwind_code_dir/src/aarch64/Lget_save_loc.c",
@@ -288,6 +291,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/ptrace/_UPT_destroy.c",
     "$libunwind_code_dir/src/ptrace/_UPT_find_proc_info.c",
     "$libunwind_code_dir/src/ptrace/_UPT_get_elf_filename.c",
+    "$libunwind_code_dir/src/ptrace/_UPT_ptrauth_insn_mask.c",
     "$libunwind_code_dir/src/ptrace/_UPT_get_dyn_info_list_addr.c",
     "$libunwind_code_dir/src/ptrace/_UPT_get_proc_name.c",
     "$libunwind_code_dir/src/ptrace/_UPT_put_unwind_info.c",
@@ -328,6 +332,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/arm/regname.c",
     "$libunwind_code_dir/src/arm/siglongjmp.S",
     "$libunwind_code_dir/src/elf32.c",
+    "$libunwind_code_dir/src/aarch64/Gstrip_ptrauth_insn_mask.c",
     "$libunwind_code_dir/src/aarch64/Gcreate_addr_space.c",
     "$libunwind_code_dir/src/aarch64/Gget_proc_info.c",
     "$libunwind_code_dir/src/aarch64/Gget_save_loc.c",
@@ -342,6 +347,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/aarch64/Gstash_frame.c",
     "$libunwind_code_dir/src/aarch64/Gstep.c",
     "$libunwind_code_dir/src/aarch64/Gtrace.c",
+    "$libunwind_code_dir/src/aarch64/Lstrip_ptrauth_insn_mask.c",
     "$libunwind_code_dir/src/aarch64/Lcreate_addr_space.c",
     "$libunwind_code_dir/src/aarch64/Lget_proc_info.c",
     "$libunwind_code_dir/src/aarch64/Lget_save_loc.c",
@@ -424,7 +430,7 @@ action("libunwind_action") {
     "$libunwind_code_dir/src/riscv/siglongjmp.S",
   ]
 
-  inputs = [ "//third_party/libunwind/libunwind-1.8.1.tar.gz" ]
+  inputs = [ "//third_party/libunwind/libunwind-1.8.3.tar.gz" ]
   libunwind_path = rebase_path("${target_gen_dir}", root_build_dir)
   libunwind_source_path = rebase_path("//third_party/libunwind", root_build_dir)
   args = [
@@ -491,7 +497,7 @@ config("unwind_config_public") {
   include_dirs = [
     "$libunwind_code_dir/src",
     "$libunwind_code_dir/include",
-    get_label_info(":libunwind_action", "target_gen_dir") + "/libunwind-1.8.1",
+    get_label_info(":libunwind_action", "target_gen_dir") + "/libunwind-1.8.3",
   ]
 
   cflags = [
