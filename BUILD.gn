@@ -710,10 +710,6 @@ if (defined(ohos_lite)) {
   }
 
   shared_library("libunwind") {
-    deps = [
-      ":libunwind_action",
-      ":unwind_source",
-    ]
     public_configs = [ ":unwind_config_public" ]
   }
 } else {
@@ -861,10 +857,6 @@ if (defined(ohos_lite)) {
   }
 
   ohos_shared_library("libunwind") {
-    deps = [
-      ":libunwind_action",
-      ":unwind_source",
-    ]
     install_images = [
       "system",
       "updater",
@@ -872,7 +864,6 @@ if (defined(ohos_lite)) {
     public_configs = [ ":unwind_config_public" ]
     innerapi_tags = [
       "platformsdk",
-      "chipsetsdk_sp",
     ]
     subsystem_name = "thirdparty"
     part_name = "libunwind"
